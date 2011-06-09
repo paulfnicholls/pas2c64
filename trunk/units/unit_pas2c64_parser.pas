@@ -199,8 +199,8 @@ begin
     FloatToC64Float(StrToFloat(v.TokenValue),C64Float);
 
     FCodeGen.WriteComment('load floating point number into FAC1');
-    FCodeGen.WriteCode('LDA <' + d);
-    FCodeGen.WriteCode('LDY >' + d);
+    FCodeGen.WriteCode('LDA #<' + d);
+    FCodeGen.WriteCode('LDY #>' + d);
     FCodeGen.WriteCode('JSR $BBA2');
     FCodeGen.WriteCode('');
 
@@ -209,8 +209,8 @@ begin
     FCodeGen.WriteCode('');
 
     FCodeGen.WriteComment('store address in zero-page');
-    FCodeGen.WriteCode('STY $FB');
-    FCodeGen.WriteCode('STA $FB + 1');
+    FCodeGen.WriteCode('STA $FB');
+    FCodeGen.WriteCode('STY $FB + 1');
 
     FCodeGen.LoadReg_IM(regY,0);
     FCodeGen.WriteLabel(l);
