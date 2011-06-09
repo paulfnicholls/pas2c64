@@ -169,11 +169,12 @@ end;
 procedure TPas2C64_Parser.ParseWriteLn;
 var
   v: TToken;
-  c,l,d: AnsiString;
+  c,l,d,t: AnsiString;
   C64Float: TC64MemFloat;
 begin
   l := FCodeGen.NewLabel;
   d := FCodeGen.NewLabel;
+  t := FCodeGen.NewLabel;
   c := FCodeGen.NewLabel;
 
   Expect(Token_lparen);
@@ -208,13 +209,23 @@ begin
     FCodeGen.WriteCode('JSR $BDDD');
     FCodeGen.WriteCode('');
 
-    FCodeGen.WriteComment('How to print string at location in A & Y to screen using $FFD2?');
-    FCodeGen.WriteComment('$FFD2 expects character in A?');
-    FCodeGen.WriteCode('');
+    FCodeGen.WriteCode('STY '+l+' + 1');
+    FCodeGen.WriteCode('STA '+l+' + 2');
 
-    FCodeGen.WriteCode('JMP ' + c);
+    FCodeGen.LoadReg_IM(regY,0);
+    FCodeGen.WriteLabel(l);
+    FCodeGen.WriteComment('$0000 is dummy address filled by STA/STY above');
+    FCodeGen.WriteCode('LDA $0000,Y');
+    FCodeGen.WriteCode('CMP #0');
+    FCodeGen.WriteCode('BEQ ' + c);
+    FCodeGen.WriteCode('JSR $FFD2');
+    FCodeGen.WriteCode('INY');
+    FCodeGen.WriteCode('JMP ' + l);
+
     FCodeGen.WriteLabel(d);
     FCodeGen.WriteCode('.byte "' + C64FloatToStr(C64Float) + '",0');
+    FCodeGen.WriteLabel(t);
+    FCodeGen.WriteCode('.byte 0,0');
     FCodeGen.WriteLabel(c);
 
 {    // convert FAC1 into string and get address in A an Y
