@@ -1,0 +1,13 @@
+MACROSTART WriteLn_String @@s
+  LDY #0
+@@0
+  LDA @@1,Y
+  CMP #0
+  BEQ @@2
+  JSR $FFD2
+  INY
+  JMP @@0
+@@1
+  .byte "@@s",13,0
+@@2
+MACROEND

@@ -1,0 +1,329 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="9"/>
+    <PathDelim Value="\"/>
+    <General>
+      <Flags>
+        <MainUnitHasUsesSectionForAllUnits Value="False"/>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+      </Flags>
+      <MainUnit Value="0"/>
+      <ResourceType Value="res"/>
+      <UseXPManifest Value="True"/>
+      <Icon Value="0"/>
+      <ActiveWindowIndexAtStart Value="0"/>
+    </General>
+    <i18n>
+      <EnableI18N LFM="False"/>
+    </i18n>
+    <VersionInfo>
+      <StringTable ProductVersion=""/>
+    </VersionInfo>
+    <BuildModes Count="1" Active="Default">
+      <Item1 Name="Default" Default="True"/>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="SynEdit"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="LCL"/>
+      </Item2>
+    </RequiredPackages>
+    <Units Count="12">
+      <Unit0>
+        <Filename Value="pas2c64.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="0"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="8"/>
+        <CursorPos X="1" Y="22"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="form_pas2c64.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormMainForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="form_pas2c64"/>
+        <EditorIndex Value="1"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="12" Y="8"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="unit_pas2c64_CodeGenerator"/>
+        <EditorIndex Value="2"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="193"/>
+        <CursorPos X="15" Y="209"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="unit_pas2c64_parser"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="4"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="189"/>
+        <CursorPos X="1" Y="214"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="units\unit_pas2c64_constants.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="unit_pas2c64_constants"/>
+        <EditorIndex Value="3"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="214"/>
+        <CursorPos X="15" Y="239"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="units\unit_pas2c64_symboltable.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="unit_pas2c64_symboltable"/>
+        <EditorIndex Value="5"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="82"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="units\uParser.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uParser"/>
+        <EditorIndex Value="6"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="313"/>
+        <CursorPos X="1" Y="329"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="units\unit_Macros.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="unit_Macros"/>
+        <EditorIndex Value="7"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="1"/>
+        <CursorPos X="1" Y="1"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="C:\lazarus\lcl\forms.pp"/>
+        <UnitName Value="Forms"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="33"/>
+        <CursorPos X="5" Y="43"/>
+        <UsageCount Value="9"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="C:\lazarus\components\synedit\synedit.pp"/>
+        <UnitName Value="SynEdit"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="991"/>
+        <CursorPos X="3" Y="1013"/>
+        <UsageCount Value="9"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="C:\lazarus\fpc\2.4.2\source\rtl\objpas\classes\classesh.inc"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="877"/>
+        <CursorPos X="29" Y="894"/>
+        <UsageCount Value="9"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="C:\lazarus\fpc\2.4.2\source\packages\winunits-base\src\shellapi.pp"/>
+        <UnitName Value="ShellApi"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="111"/>
+        <CursorPos X="1" Y="111"/>
+        <UsageCount Value="9"/>
+      </Unit11>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="28">
+      <Position1>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="258" Column="22" TopLine="249"/>
+      </Position1>
+      <Position2>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="405" Column="21" TopLine="394"/>
+      </Position2>
+      <Position3>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="263" Column="1" TopLine="250"/>
+      </Position3>
+      <Position4>
+        <Filename Value="pas2c64.lpr"/>
+        <Caret Line="38" Column="14" TopLine="23"/>
+      </Position4>
+      <Position5>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="260" Column="26" TopLine="251"/>
+      </Position5>
+      <Position6>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="261" Column="26" TopLine="251"/>
+      </Position6>
+      <Position7>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="410" Column="15" TopLine="404"/>
+      </Position7>
+      <Position8>
+        <Filename Value="pas2c64.lpr"/>
+        <Caret Line="41" Column="13" TopLine="24"/>
+      </Position8>
+      <Position9>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="262" Column="15" TopLine="252"/>
+      </Position9>
+      <Position10>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="261" Column="26" TopLine="252"/>
+      </Position10>
+      <Position11>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="262" Column="26" TopLine="252"/>
+      </Position11>
+      <Position12>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="431" Column="1" TopLine="1"/>
+      </Position12>
+      <Position13>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="453" Column="10" TopLine="425"/>
+      </Position13>
+      <Position14>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="486" Column="10" TopLine="458"/>
+      </Position14>
+      <Position15>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="492" Column="10" TopLine="464"/>
+      </Position15>
+      <Position16>
+        <Filename Value="units\uParser.pas"/>
+        <Caret Line="165" Column="57" TopLine="67"/>
+      </Position16>
+      <Position17>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position17>
+      <Position18>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="109" Column="7" TopLine="81"/>
+      </Position18>
+      <Position19>
+        <Filename Value="units\unit_pas2c64_constants.pas"/>
+        <Caret Line="240" Column="59" TopLine="214"/>
+      </Position19>
+      <Position20>
+        <Filename Value="units\unit_pas2c64_constants.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position20>
+      <Position21>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="171" Column="10" TopLine="167"/>
+      </Position21>
+      <Position22>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="179" Column="12" TopLine="161"/>
+      </Position22>
+      <Position23>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="199" Column="56" TopLine="170"/>
+      </Position23>
+      <Position24>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="201" Column="28" TopLine="184"/>
+      </Position24>
+      <Position25>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="202" Column="34" TopLine="184"/>
+      </Position25>
+      <Position26>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="209" Column="19" TopLine="186"/>
+      </Position26>
+      <Position27>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="259" Column="15" TopLine="247"/>
+      </Position27>
+      <Position28>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="212" Column="36" TopLine="192"/>
+      </Position28>
+      <Position29>
+        <Filename Value="units\unit_pas2c64_parser.pas"/>
+        <Caret Line="204" Column="19" TopLine="192"/>
+      </Position29>
+      <Position30>
+        <Filename Value="units\unit_pas2c64_CodeGenerator.pas"/>
+        <Caret Line="209" Column="15" TopLine="193"/>
+      </Position30>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="9"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <IncludeFiles Value="units"/>
+      <OtherUnitFiles Value="units"/>
+    </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <SyntaxMode Value="delphi"/>
+      </SyntaxOptions>
+    </Parsing>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions Count="3">
+      <Item1>
+        <Name Value="EAbort"/>
+      </Item1>
+      <Item2>
+        <Name Value="ECodetoolError"/>
+      </Item2>
+      <Item3>
+        <Name Value="EFOpenError"/>
+      </Item3>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

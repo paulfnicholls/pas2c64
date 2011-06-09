@@ -1,0 +1,736 @@
+object FormMainForm: TFormMainForm
+  Left = 305
+  Height = 605
+  Top = 87
+  Width = 862
+  Caption = 'Pas2C64 Compiler'
+  ClientHeight = 605
+  ClientWidth = 862
+  Color = clBtnFace
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  KeyPreview = True
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyUp = FormKeyUp
+  Position = poScreenCenter
+  LCLVersion = '0.9.30'
+  object Splitter: TSplitter
+    Cursor = crVSplit
+    Left = 0
+    Height = 10
+    Top = 281
+    Width = 862
+    Align = alTop
+    ResizeAnchor = akTop
+  end
+  object GroupBox1: TGroupBox
+    Left = 0
+    Height = 281
+    Top = 0
+    Width = 862
+    Align = alTop
+    Caption = 'Source Code'
+    ClientHeight = 263
+    ClientWidth = 858
+    TabOrder = 0
+    inline SynEdit_SourceCode: TSynEdit
+      Left = 0
+      Height = 263
+      Top = 0
+      Width = 858
+      Align = alClient
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Courier New'
+      Font.Pitch = fpFixed
+      Font.Quality = fqNonAntialiased
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 0
+      Gutter.Width = 57
+      Gutter.MouseActions = <      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccAny
+          ClickDir = cdDown
+          Command = 13
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbRight
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 12
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      RightGutter.Width = 0
+      RightGutter.MouseActions = <      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccAny
+          ClickDir = cdDown
+          Command = 13
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbRight
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 12
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      Highlighter = SynPasSyn
+      Keystrokes = <>
+      MouseActions = <      
+        item
+          Shift = []
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 1
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = [ssShift]
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 1
+          MoveCaret = True
+          Option = 1
+          Priority = 0
+        end      
+        item
+          Shift = [ssAlt]
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 3
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = [ssShift, ssAlt]
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 3
+          MoveCaret = True
+          Option = 1
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbRight
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 12
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccDouble
+          ClickDir = cdDown
+          Command = 6
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccTriple
+          ClickDir = cdDown
+          Command = 7
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccQuad
+          ClickDir = cdDown
+          Command = 8
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbMiddle
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 10
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = [ssCtrl]
+          ShiftMask = [ssShift, ssAlt, ssCtrl]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 11
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      MouseSelActions = <      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 9
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      Lines.Strings = (
+        'program Test;'
+        'begin'
+        '  WriteLn(''hello world'');'
+        'end.'
+      )
+      BracketHighlightStyle = sbhsBoth
+      WantTabs = True
+      inline SynLeftGutterPartList1: TSynGutterPartList
+        object SynGutterMarks1: TSynGutterMarks
+          Width = 24
+        end
+        object SynGutterLineNumber1: TSynGutterLineNumber
+          Width = 17
+          MouseActions = <>
+          MarkupInfo.Background = clBtnFace
+          MarkupInfo.Foreground = clNone
+          DigitCount = 2
+          ShowOnlyLineNumbersMultiplesOf = 1
+          ZeroStart = False
+          LeadingZeros = False
+        end
+        object SynGutterChanges1: TSynGutterChanges
+          Width = 4
+          ModifiedColor = 59900
+          SavedColor = clGreen
+        end
+        object SynGutterSeparator1: TSynGutterSeparator
+          Width = 2
+        end
+        object SynGutterCodeFolding1: TSynGutterCodeFolding
+          MouseActions = <          
+            item
+              Shift = []
+              ShiftMask = []
+              Button = mbRight
+              ClickCount = ccSingle
+              ClickDir = cdUp
+              Command = 16
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end          
+            item
+              Shift = []
+              ShiftMask = [ssShift]
+              Button = mbMiddle
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 14
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end          
+            item
+              Shift = [ssShift]
+              ShiftMask = [ssShift]
+              Button = mbMiddle
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 14
+              MoveCaret = False
+              Option = 1
+              Priority = 0
+            end          
+            item
+              Shift = []
+              ShiftMask = []
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 0
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end>
+          MarkupInfo.Background = clNone
+          MarkupInfo.Foreground = clGray
+          MouseActionsExpanded = <          
+            item
+              Shift = []
+              ShiftMask = []
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 14
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end>
+          MouseActionsCollapsed = <          
+            item
+              Shift = [ssCtrl]
+              ShiftMask = [ssCtrl]
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 15
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end          
+            item
+              Shift = []
+              ShiftMask = [ssCtrl]
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 15
+              MoveCaret = False
+              Option = 1
+              Priority = 0
+            end>
+        end
+      end
+    end
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 57
+    Top = 548
+    Width = 862
+    Align = alBottom
+    ClientHeight = 57
+    ClientWidth = 862
+    TabOrder = 1
+    object Label_CodeAddr: TLabel
+      Left = 298
+      Height = 14
+      Top = 27
+      Width = 80
+      Caption = 'Code Address'
+      Enabled = False
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object Button_Compile: TButton
+      Left = 6
+      Height = 25
+      Top = 4
+      Width = 97
+      Caption = 'Compile (Ctrl+F9)'
+      OnClick = Button_CompileClick
+      TabOrder = 0
+    end
+    object Button_CompileAndRun: TButton
+      Left = 126
+      Height = 25
+      Top = 4
+      Width = 133
+      Caption = 'Compile and  run (F9)'
+      OnClick = Button_CompileAndRunClick
+      TabOrder = 1
+    end
+    object CheckBox_UseBasicLoader: TCheckBox
+      Left = 282
+      Height = 19
+      Top = 4
+      Width = 121
+      Caption = 'Use BASIC loader'
+      Checked = True
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      OnClick = CheckBox_UseBasicLoaderClick
+      ParentFont = False
+      State = cbChecked
+      TabOrder = 2
+    end
+    object Edit_CodeAddr: TEdit
+      Left = 383
+      Height = 21
+      Top = 27
+      Width = 121
+      Enabled = False
+      TabOrder = 3
+      Text = '$c000'
+    end
+  end
+  object GroupBox2: TGroupBox
+    Left = 0
+    Height = 257
+    Top = 291
+    Width = 862
+    Align = alClient
+    Caption = 'Assembly Output'
+    ClientHeight = 239
+    ClientWidth = 858
+    TabOrder = 2
+    inline SynEdit_AssemblyOutput: TSynEdit
+      Left = 0
+      Height = 239
+      Top = 0
+      Width = 858
+      Align = alClient
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Courier New'
+      Font.Pitch = fpFixed
+      Font.Quality = fqNonAntialiased
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 0
+      Gutter.Width = 57
+      Gutter.MouseActions = <      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccAny
+          ClickDir = cdDown
+          Command = 13
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbRight
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 12
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      RightGutter.Width = 0
+      RightGutter.MouseActions = <      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccAny
+          ClickDir = cdDown
+          Command = 13
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbRight
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 12
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      Highlighter = SynPasSyn
+      Keystrokes = <>
+      MouseActions = <      
+        item
+          Shift = []
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 1
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = [ssShift]
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 1
+          MoveCaret = True
+          Option = 1
+          Priority = 0
+        end      
+        item
+          Shift = [ssAlt]
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 3
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = [ssShift, ssAlt]
+          ShiftMask = [ssShift, ssAlt]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 3
+          MoveCaret = True
+          Option = 1
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbRight
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 12
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccDouble
+          ClickDir = cdDown
+          Command = 6
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccTriple
+          ClickDir = cdDown
+          Command = 7
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccQuad
+          ClickDir = cdDown
+          Command = 8
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbMiddle
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 10
+          MoveCaret = True
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = [ssCtrl]
+          ShiftMask = [ssShift, ssAlt, ssCtrl]
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdUp
+          Command = 11
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      MouseSelActions = <      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 9
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end>
+      ReadOnly = True
+      BracketHighlightStyle = sbhsBoth
+      WantTabs = True
+      inline SynLeftGutterPartList1: TSynGutterPartList
+        object SynGutterMarks1: TSynGutterMarks
+          Width = 24
+        end
+        object SynGutterLineNumber1: TSynGutterLineNumber
+          Width = 17
+          MouseActions = <>
+          MarkupInfo.Background = clBtnFace
+          MarkupInfo.Foreground = clNone
+          DigitCount = 2
+          ShowOnlyLineNumbersMultiplesOf = 1
+          ZeroStart = False
+          LeadingZeros = False
+        end
+        object SynGutterChanges1: TSynGutterChanges
+          Width = 4
+          ModifiedColor = 59900
+          SavedColor = clGreen
+        end
+        object SynGutterSeparator1: TSynGutterSeparator
+          Width = 2
+        end
+        object SynGutterCodeFolding1: TSynGutterCodeFolding
+          MouseActions = <          
+            item
+              Shift = []
+              ShiftMask = []
+              Button = mbRight
+              ClickCount = ccSingle
+              ClickDir = cdUp
+              Command = 16
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end          
+            item
+              Shift = []
+              ShiftMask = [ssShift]
+              Button = mbMiddle
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 14
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end          
+            item
+              Shift = [ssShift]
+              ShiftMask = [ssShift]
+              Button = mbMiddle
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 14
+              MoveCaret = False
+              Option = 1
+              Priority = 0
+            end          
+            item
+              Shift = []
+              ShiftMask = []
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 0
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end>
+          MarkupInfo.Background = clNone
+          MarkupInfo.Foreground = clGray
+          MouseActionsExpanded = <          
+            item
+              Shift = []
+              ShiftMask = []
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 14
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end>
+          MouseActionsCollapsed = <          
+            item
+              Shift = [ssCtrl]
+              ShiftMask = [ssCtrl]
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 15
+              MoveCaret = False
+              Option = 0
+              Priority = 0
+            end          
+            item
+              Shift = []
+              ShiftMask = [ssCtrl]
+              Button = mbLeft
+              ClickCount = ccAny
+              ClickDir = cdDown
+              Command = 15
+              MoveCaret = False
+              Option = 1
+              Priority = 0
+            end>
+        end
+      end
+    end
+  end
+  object SynPasSyn: TSynPasSyn
+    Enabled = False
+    AsmAttri.FrameEdges = sfeAround
+    CommentAttri.FrameEdges = sfeAround
+    IDEDirectiveAttri.FrameEdges = sfeAround
+    IdentifierAttri.FrameEdges = sfeAround
+    KeyAttri.FrameEdges = sfeAround
+    NumberAttri.FrameEdges = sfeAround
+    SpaceAttri.FrameEdges = sfeAround
+    StringAttri.FrameEdges = sfeAround
+    SymbolAttri.FrameEdges = sfeAround
+    CaseLabelAttri.FrameEdges = sfeAround
+    DirectiveAttri.FrameEdges = sfeAround
+    CompilerMode = pcmDelphi
+    NestedComments = False
+    left = 424
+    top = 52
+  end
+end

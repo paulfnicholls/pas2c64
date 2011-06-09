@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2011/01/20 10:32:48.737.pas,E:\pas2c64\form_pas2c64.pas=</Transaction>
+    <Transaction>2011/01/20 10:32:48.737.dfm,E:\pas2c64\form_pas2c64.dfm=</Transaction>
+    <Transaction>2011/01/20 11:36:20.511.pas,E:\pas2c64\Unit1.pas=E:\pas2c64\units\unit_pas2c64_CodeGenerator.pas</Transaction>
+    <Transaction>2011/01/21 14:22:08.836.pas,E:\pas2c64\units\unit_parser.pas=</Transaction>
+    <Transaction>2011/01/21 14:59:16.554.pas,E:\pas2c64\Unit1.pas=E:\pas2c64\units\unit_pas2c64_parser.pas</Transaction>
+    <Transaction>2011/01/21 16:13:50.582.pas,E:\pas2c64\units\unit_parser_types.pas=</Transaction>
+    <Transaction>2011/01/22 14:54:54.296.pas,G:\pas2c64\Unit1.pas=G:\pas2c64\units\unit_pas2c64_constants.pas</Transaction>
+    <Transaction>2011/01/22 15:02:01.795.pas,G:\pas2c64\Unit1.pas=G:\pas2c64\units\unit_pas2c64_symboltable.pas</Transaction>
+    <Transaction>2011/01/28 09:16:52.619.pas,E:\pas2c64\Unit1.pas=E:\pas2c64\units\unit_pascal_parser.pas</Transaction>
+    <Transaction>2011/01/28 09:17:30.072.pas,E:\pas2c64\units\unit_pascal_parser.pas=E:\pas2c64\units\unit_base_parser.pas</Transaction>
+    <Transaction>2011/01/28 10:46:06.125.pas,E:\pas2c64\Unit1.pas=E:\pas2c64\units\unit_base_lexer.pas</Transaction>
+    <Transaction>2011/01/28 15:57:34.375.pas,E:\pas2c64\Unit1.pas=E:\pas2c64\units\unit_base_parser_types.pas</Transaction>
+    <Transaction>2011/02/02 13:06:43.980.pas,E:\pas2c64\units\unit_parser_types.pas=</Transaction>
+    <Transaction>2011/02/02 13:06:44.027.pas,E:\pas2c64\units\unit_lexer.pas=</Transaction>
+    <Transaction>2011/02/02 13:06:44.042.pas,E:\pas2c64\units\unit_base_lexer.pas=</Transaction>
+    <Transaction>2011/02/10 20:43:48.777.pas,C:\Shared\Projects\pas2c64\Unit2.pas=C:\Shared\Projects\pas2c64\units\unit_Macros.pas</Transaction>
+    <Transaction>2011/02/10 20:54:34.310.pas,C:\Shared\Projects\pas2c64\Unit2.pas=C:\Shared\Projects\pas2c64\units\uVirtualMachine.pas</Transaction>
+  </Transactions>
+</BorlandProject>
