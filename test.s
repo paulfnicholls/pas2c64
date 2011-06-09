@@ -6,16 +6,16 @@ Lab2064
     JMP main
 main
 ;load floating point number into FAC1
-    LDA <L1
-    LDY >L1
+    LDA #<L1
+    LDY #>L1
     JSR $BBA2
     
 ;convert number in FAC1 to ASCII (pointer in A & Y)
     JSR $BDDD
     
 ;store address in zero-page
-    STY $FB
-    STA $FB + 1
+    STA $FB
+    STY $FB + 1
     LDY #$00
 L0
     LDA ($FB),Y
@@ -24,7 +24,7 @@ L0
     INY
     JMP L0
 L1
-    .byte $81 $00 $00 $00 $00
+    .byte $87 $4C $00 $00 $00
 L2
     .byte 0,0
 L3
