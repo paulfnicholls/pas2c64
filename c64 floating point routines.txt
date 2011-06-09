@@ -1,0 +1,423 @@
+
+
+                                                                        :233
+
+/***** uiucdcs:net.micro.cbm / miller /  1:01 am  Jan 28, 1984 */
+
+     Well, here is the first installment of how to use the c64 floating point
+routines from assembly language.  When using these routines, keep in mind that
+they reside in the c64's ROM.  Hence, if you flip that out to expose the RAM at
+those addresses, you will be unable to access these routines.
+     This time, I'll go over the format of floating point numbers as used in
+the machine.  Later, I'll describe which routines are available and how to
+call them.  (By the way, since the VIC20's Basic interpretor is almost exactly
+the same as on the c64, most of what I say here applies to that machine too.
+Some of the addresses may have to be changed though.)
+     C64 Basic floating point numbers are broken up into three contiguous
+sections: the exponent (one byte) followed by the mantissa (four bytes)
+followed by the sign of the number (one byte).  I'll go over each of the parts
+in turn.
+     The exponent is stored in "excess 128" which means it has a value 128
+higher than the true exponent of the number.  That is, exponents can have a
+value of -128 to 127 but are stored as 0 to 255.  (The purpose of "excess n" is
+to avoid having to deal with negative exponents.  It makes comparisons for
+size much easier.)  What the exponent tells you is how many bits the mantissa
+must be shifted from its stored value to give you its true value.
+     The mantissa is stored in a normalized format, i.e., the binary point is
+assumed to be to the left of the value and the leftmost bit is always a 1.
+Hence the 32 bit values stored here represent numbers between zero and one.
+     If the high order bit of the sign byte is on then the number is negative.
+If it is off then the number is positive.
+     So to compute the true value of the number stored you can use the follow-
+ing equation:
+                  0.mantissa * 2 ** (exponent - 128)
+(Multiplying by powers of two are equivalent to shifting, of course).  The
+above equation will give you a generic binary value.  You then look at the sign
+byte's bit to determine the sign of the number and you are done!
+     Confused?  Let's look at some examples.  The number 13 is 1101 in binary,
+or $D in hex.  Now 1101 is going to be normalized into a four byte section,
+i.e., we will place the number in such that the lead bit is a 1.  Hence our
+mantissa is:
+11010000 00000000 00000000 00000000
+  $D0      $00      $00      $00
+But remember, the binary point is assumed to be to the left of the mantissa.
+So the number stored above reads .1101 which is not right.  To get the real
+value out we need to shift the binary point four places to the right.  This is
+the purpose of the exponent.  It has the value of 4, plus 128, or 132.
+Finally, the number is positive so the sign byte is 0.  Hence, our final
+product is:
+exponent -------------mantissa-------------- --sign--
+10000100 11010000 00000000 00000000 00000000 00000000
+  $84      $D0      $00      $00      $00      $00
+  132      208        0        0        0        0
+     Other examples would be:
+One is represented as $81 $80 $00 $00 $00 $00
+Two is represented as $82 $80 $00 $00 $00 $00
+Three is represented as $82 $C0 $00 $00 $00 $00
+One half is represented as $80 $80 $00 $00 $00 $00
+One fourth is represented as $7F $80 $00 $00 $00 $00
+And -67 is represented as $87 $86 $00 $00 $00 $80
+     Next time, we'll look at the calling protocol for using the subroutines.
+
+A. Ray Miller
+Univ Illinois
+
+******************************************************************************
+******************************************************************************
+
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / miller /  4:01 pm  Feb  2, 1984 */
+
+     This is the second installment of how to use Basic's floating point sub-
+routines from assembly language on the c64.  This time: protocol.
+     There are two floating point "registers" on the machine, F1 and F2.  F1 is
+located at $61-$66 (97-102) and F2 at $69-$6E (105-110).  These registers are
+used for all of the floating point math routines.  Values are stored in each of
+the six bytes in the format described last time.
+     In addition, there is a sign comparison flag located at $6F (111).  If the
+high order bit is set, it means that F1 and F2 are of different signs.
+     Subroutines may be executed by a JSR to the indicated  address.
+Parameters are passed in and out of the routines through F1, F2, and sometimes
+other memory locations.  When other locations must be specified, they are in
+what we will call standard format (SF).  SF means that memory addresses are
+passed through the A (LSB) and the Y (MSB) registers.
+     Well, that's about all.  Next time, I'll give you the actual calling
+addresses of the subroutines along with a description of what they do.  Stay
+tuned...
+
+A. Ray Miller
+Univ Illinois
+
+******************************************************************************
+******************************************************************************
+
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / miller /  1:00 pm  Feb  6, 1984 */
+
+     This is the third in the series of how to use the Basic floating point
+subroutines from machine language on the c64.  This time, we'll begin to look
+at what subroutines are out there for us to use.  (Note: as before, most of
+what I say applies to the vic20 too (or any future major revisions of the c64).
+The only real changes are the addresses specified.)  Also, it has come to my
+attention that info on the floating point routines is in the book "The VIC
+Revealed".  I did not know this when I started this series.  At any rate, since
+I'm sure there are others like me who do not have this book, I'll continue this
+series.
+     Here are the first 15 subroutines:
+
+Integer to F1 $B391 (45969)
+A two byte integer value in SF is converted to a floating point number.  The
+results are stored into F1.
+
+F1 to integer $B1AA (45482)
+F1 is converted into a two byte integer which is stored into $64-65 (100-101).
+F1 is trashed.
+
+Memory to F1 $BBA2 (48034)
+A 5 byte floating pt. no. anywhere in mem is loaded into F1.  The address is in
+SF.  The sign flag of F1 is set if the high order bit of the mantissa is set;
+otherwise it is reset.  The exponent is returned in the A register.
+
+ASCII to F1 $B7B5 (47029)
+An ASCII string is converted to floating pt format and stored in F1.  The
+length of the string is loaded into A; the starting location into the "utility
+string pointer" $22-23 (34-35).
+
+F1 to ASCII $BDDD (48605)
+F1 is converted into an ASCII string and stored starting at $0100 (256).  A $00
+terminates the string.
+
+Memory to F2 $BA8C (47756)
+Like above except F2 is used and the sign comparison flag is set.  The exponent
+of F1 is returned in A.
+
+F1 to memory $BBD7 (48087)
+F1 is stored into any 5 byte location (X holds the MSB; Y the LSB of that loca-
+tion).  The high order bit of the mantissa is forced to the F1 sign flag.
+
+F2 to F1 $BBFC (48124)
+Copy F2 to F1.
+
+F1 to F2 $BC0F (48143)
+Copy F1 to F2.
+
+Logical AND of F1 and F2 $AFE9 (45033)
+The results are placed into F1.
+
+Logical OR of F1 and F2 $AFE6 (45030)
+The results are placed into F1.
+
+F1 = F1 - F2 $B853 (47187)
+Subtraction.
+
+F1 = F1 + F2 $B86A (47210)
+Addition.  You must set the sign comparison flag first.  Do this by EORing lo-
+cations $66 and $6E and store the results in $6F.  Also, load A with the value
+found in $61.  Both of the functions can be done by the memory to F2 routine.
+
+F1 = F1 * F2 $BA30 (47664)
+Multiplication.  Same notes apply as in addition.  However, if you call $BA28
+(47656) instead, the memory to F2 will be executed first and then this one
+automatically.
+
+F1 = LOG (F1) $B9EA (47954)
+Natural logarithm (base e).
+
+     Next time I'll complete this series with the final 13 subroutines.
+A. Ray Miller
+Univ Illinois
+
+******************************************************************************
+******************************************************************************
+
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / decwrl!daemon /  4:29 am  Feb  7, 1984 */
+From: vogon::goodenough  (Jeff Goodenough, IPG Basingstoke)
+I was very interested to read Ray Miller's articles (2 to date) on using
+the C64's BASIC ROM Floating Point routines.  However, I must take issue on
+a very fundamental point : although a 6-byte floating point format as he
+describes is used internally, all variables and constants (which is what
+the user works with) are stored in a 5-byte format. The first byte (at the
+lowest address) is the exponent, followed by four bytes of mantissa. The
+sign is held in bit 7 of the first mantissa byte (the 2nd byte of the 5-byte
+number).
+
+Maybe Ray is getting round to this, but I felt I should point this out to
+avoid (generate?) confusion.
+
+Another point of interest is that a zero exponent represents absolute zero
+- as far as I can see, the mantissa contents are ignored in this case. This
+is borne out by a funny quirk of C64 basic:  if you say X=0, this is stored
+as $00 00 00 00 00, whereas if you say X=0.0, this is stored as
+$00 20 00 00 00!  (or maybe the 20 should be 32 - I can't remember whether
+I was printing in decimal or hex when I discovered this.)
+
+I have also done a fair amount of research on these routines but I'll leave
+Ray to carry on with his excellent series.  If I have any other points to
+raise I'll do so!
+
+Jeff
+(from rainswept England).
+
+	UUCP:		... decvax!decwrl!rhea!vogon!goodenough
+			...allegra!decwrl!rhea!vogon!goodenough
+			... ucbvax!decwrl!rhea!vogon!goodenough
+
+	ARPA:		decwrl!rhea!vogon!goodenough@Berkeley
+			decwrl!rhea!vogon!goodenough@SU-Shasta
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / miller / 12:08 am  Feb  9, 1984 */
+I stand corrected.
+Jeff is absolutely right on his comments about internal/external representation
+of the c64 floating point numbers.  My description of the "memory to F1" and
+"F1 to memory" subroutines mentioned the 5 byte/high mantissa sign format (see
+part 3 of the series) but this certainly was unclear.
+
+A. Ray Miller
+Univ Illinois
+
+******************************************************************************
+******************************************************************************
+
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / miller / 12:17 am  Feb 12, 1984 */
+
+     This is the 4th and final note in the series of how to use the c64's Basic
+floating point subroutines from assembly language.  The final 13 subroutines
+are:
+
+F1 = F2 / F1 $BB12 (47890)
+Division.  The notes on addition apply here too.  But if you call $BB0F
+instead, the loading of F2 from memory will be done automatically before the
+division.
+
+F1 = F2 ^ F1 $BF7B (49013)
+Exponentiation.  The notes on addition apply here too.  The alternate entry
+point here is $BF78 which will first load F1 from memory (but does not set the
+sign compare flag properly).  When using the alternate entry points, keep in
+mind you must use SF as with all of the "Memory to F" routines.
+
+F1 = F1 / 10 $BAFE (47870)
+Divide by 10.
+
+Compare F1 and memory $BC5B (48219)
+F1 is compared with some floating point number in a location specified in SF.
+If the numbers are equal, A is set to 0; otherwise it is set to $FF.
+
+F1 = ABS(F1) $BC58 (48216)
+Absolute value.
+
+F1 = INT(F1) $BCCC (48332)
+Returns the integer portion of the number.
+
+F1 = SGN(F1) $BC39 (48185)
+F1 is replaced by: -1 if it was less than zero, 0 if it was zero, or 1 if it
+was greater than zero.
+
+F1 = SQR(F1) $BF71 (49009)
+Square root.
+
+F1 = EXP(F1) $BFED (49133)
+e to the power F1.
+
+F1 = COS(F1) $E264 (57956)
+Cosine in radians.
+
+F1 = SIN(F1) $E26B (57963)
+Sine in radians.
+
+F1 = TAN(F1) $E2B7 (58039)
+Tangent in radians.
+
+F1 = ATN(F1) $E30D (58125)
+Arctangent in radians.
+
+     Next week: the solution to the "c64 delete back past the 80th column at
+the bottom of the screen bug" (CDBPT8CATBOTSB).  I consider that to be one of
+the most important notes I've written.  Don't touch that dial...
+
+A. Ray Miller
+Univ Illinois
+
+******************************************************************************
+******************************************************************************
+
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / decwrl!daemon /  7:05 pm  Feb 10, 1984 */
+From: vogon::goodenough  (Jeff Goodenough, IPG)
+In reply to sytek!blk (aka B<), Ray Miller probably did just what I did -
+wrote a disassembler and disassembled the ROM.  From then on it's just a
+detective game - following leads like the pointer table in low ROM
+(near A000) which is in order of token values, and picking out likely
+looking bits of code that play with the FAC.  Then you try it out and see
+if it works.  As we English say, "the proof of the pudding is in the eating".
+
+Or maybe you *do* have inside info, Ray?  Also, any response on my earlier
+comment regarding variable storage?  Another point: could you check that
+floating subtract?  My reading of it is that it is an *inverse* subtract
+(like divide), so that F1 := F2-F1, not F1-F2.  But I call FSUB at $B850
+(instead of B853) which loads the SF variable into F2 first.  Maybe it
+moves things around as well, but I don't have my ROM listing with me to
+check.
+
+Jeff Goodenough
+DEC, Basingstoke, (olde) Hampshire, UK.
+
+	UUCP:		... decvax!decwrl!rhea!vogon!goodenough
+			...allegra!decwrl!rhea!vogon!goodenough
+			... ucbvax!decwrl!rhea!vogon!goodenough
+
+	ARPA:		decwrl!rhea!vogon!goodenough@Berkeley
+			decwrl!rhea!vogon!goodenough@SU-Shasta
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / miller / 12:50 am  Feb 15, 1984 */
+
+     By golly Jeff, you're right!  It is F1 = F2 - F1 on the c64 floating point
+routines (and not F1 - F2).  My mistake there.  Actually, subtraction is very
+short, so I have reproduced it below for those that are interested:
+
+; subtraction
+;
+    ORG  $B853
+    LDA  102    ;get sign of F1
+    EOR# $FF    ;complement F1 sign
+    STA  102    ;replace so F1=-1*F1
+    EOR  110    ;compare F1, F2 signs
+    STA  111    ;set sign compare flag for addition
+    LDA  97     ;setup for add too
+    JMP  $B86A  ;goto addition subroutine
+
+     I wrote a note last week on the variable storage question so I won't
+reproduce that here again.
+     Thanks for pointing that out, Jeff.  Sorry for the mixup...
+
+A. Ray Miller
+Univ Illinois
+
+******************************************************************************
+******************************************************************************
+
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / genrad!al /  6:13 pm  Feb  9, 1984 */
+I am not positive but I think there is a minor error in the reported addresses
+for two of the routines mentioned by Ray Miller.  The F1 to memory routine is
+at $BBD4 not $BBD7 and the F1 to F2 routine is at $BC0C, not $BCOF.  The rest
+of the routines look correct.
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / miller / 11:10 pm  Feb 14, 1984 */
+
+     Sorry, but I if I've done this correctly, I have to differ with you on the
+addresses for the c64 floating point routines.  You claimed that two of the
+addresses I gave in part 3 of my series were incorrect, i.e., "F1 to memory"
+and "F1 to F2".  I have copied one of the routines below so that you can verify
+it works.  The comments are of course mine, but the rest comes straight from my
+disassembler.
+
+; F1 to F2 subroutine
+;
+    ORG  $BC0F  ;where I started disassembling
+    LDX# 6      ;six bytes to copy
+    LDA  96,X   ;F1 (97-102)
+    STA  104,X  ;F2 (105-110)
+    DEX
+    BNE  *-5    ;done?
+    STX  112
+    RTS
+
+     The other routine begins:
+
+; F1 to memory
+;
+    ORG  $BBD7
+    STX  34     ;save MSB memory location
+    STY  35     ;save LSB
+     .
+     .
+     .
+
+     If you jump to the locations you suggested ($BC0C and $BBD4) rather than
+the ones I gave in my four part series, then in both cases you will first
+execute a JSR $BC1B which is an internal round off F1 subroutine.  After the
+RTS you will wind up right back where I suggested you branch to in the first
+place.
+
+A. Ray Miller
+Univ Illinois
+
+******************************************************************************
+******************************************************************************
+
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / genrad!al /  9:37 pm  Feb 16, 1984 */
+In regards to the accuracy of addresses $BBD4 vs $BBD7 for moving F1 to memory
+and $BC0C vs $BC0F for moving F1 to F2, I still think I'm right that the lower
+addresses are correct.  First of all, the extra byte at $70 is very important
+and should not be ignored.  BASIC obtains extra accuracy by using one more bit
+of mantissa for arithmetic operations on the main floating point accumulator
+(F1) and then rounding off before sending F1 to any place else (the storage
+format in memory is different and so needs conversion and the secondary FPA
+(F2) doesn't have room to store the extra bit).  But in addition, $BBD0 is the
+entry point for the routine that stores the FPA into the memory occupied by
+the current variable (as in a LET statement) and it loads X and Y with the
+correct address and then falls through to $BBD4.  In fact, I found no routine
+within BASIC that calls $BBD7.  By analogy, I assume that $BC0C is actually
+the correct entry point for most F1 to F2 operations though I agree with you
+that the only difference between your entry points and mine is that call to
+$BC1B.
+/* ---------- */
+/***** uiucdcs:net.micro.cbm / decwrl!lipman /  6:06 pm  Feb 24, 1984 */
+Message-Id: <8402241106.AA14043@decwrl.ARPA>
+Date: Friday, 24 Feb 1984 03:04:35-PST
+From: vogon::goodenough  (speling courtesy of clapped out VT100)
+To: net.micro.cbm
+Subject: FP rounding and ASCII to screen codes
+
+Looking at the code again, I think I have to agree with genrad!al (sorry,
+you didn't post your name!), although for FSTO I have been using $BBD7 like
+Ray, and not $BBD4.  It looks as though for the sake of accuracy I should
+change to the lower address.  As Al (?) says, where this is called internally,
+$BBD4 is used.  I haven't used F1 to F2 directly, as I regard that as
+'internal' - I work with memory variables, using (A,Y) addressing.
+
+Jeff.
+/* ---------- */

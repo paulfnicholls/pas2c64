@@ -1,0 +1,277 @@
+Appendix F
+
+                                                           Floating
+                                                              Point
+                                                     Representation
+
+
+
+                                                                        :232:
+
+Packed:  5 bytes (as found in variable or array)
+
++--------+   +--------+--------+--------+--------+
+|eeeeeeee|   |smmmmmmm|mmmmmmmm|mmmmmmmm|mmmmmmmm|
++--------+   +--------+--------+--------+--------+
+
+Zero Flag/           Mantissa (value)
+Exponent                  4 bytes
+             High bit represents sign of mantissa
+
+
+Unpacked:  6 bytes (as found in floating point accumulators)
+
++--------+   +--------+--------+--------+--------+   +--------+
+|eeeeeeee|   |1mmmmmmm|mmmmmmmm|mmmmmmmm|mmmmmmmm|   |sxxxxxxx|
++--------+   +--------+--------+--------+--------+   +--------+
+
+Zero Flag/           Mantissa (value)                Sign (High
+Exponent                  4 bytes                    Order Bit
+             High bit represents sign of mantissa      Only)
+
+
+- If exponent = 0, the whole number = 0
+- If exponent > $80, the decimal point is to be set as many places to the
+  right as the exponent exceeds $80.
+- Example:  Exponent:  $83, mantissa:  11000000... binary.  Set the point
+  three positions over:  110.000... to give a value of 6.
+- If exponent <= $80, the number is a fraction less than 1.
+
+
+Exercise:  Represent +27 in Floating Point
+
+27 decimal = 11011 binary; mantissa = 11011000... the point is to be
+positioned 5 places in (11011.000...) so we get:
+
+  Exponent:  $85
+  Mantissa:  %11011000 00000000 00000000 00000000
+             $D8 00 00 00
+
+To pack, we replace the first bit of the mantissa with a sign bit (0 for
+positive) and arrive at:
+
+  85 58 00 00 00
+  
+Converting decimal to fp and fp to decimal
+------------------------------------------
+FLOATING-POINT NUMBERS
+          By Bob (k7) Kober
+
+ A Floating Point (FP) number is the
+ product of a mantissa multiplied by a
+ power of two. In Commodore BASIC, FP
+ numbers occupy 5 bytes, with the
+ power of two contained in the
+ 'exponent' (1st) byte, and the
+ mantissa in the last four bytes.
+
+ Briefly, a mantissa is a sum of
+ NEGATIVE powers of 2, just as a
+ binary number is the sum of POSITIVE
+ powers of two. This will be explained
+ futher later.
+
+ The expontent byte actually contains
+ the true expontent value with a 129
+ ($81) offset added, so that it can
+ represent both positive and negative
+ numbers. Therefore if the exponent
+ byte contains a $84, then the true
+ exponent is $84-$81 or $03. Two is
+ raised to the power of 3, and thus
+ the mantissa is multiplied by 8.
+
+ NOTE: A zero in the exponent byte
+ indicates a FP number of zero,
+ reguardless of what the mantissa
+ holds. This makes it easy to zero
+ any FP number.
+
+ The four byte mantissa (32 bits) can
+ hold any number between 1.0 and
+ 1.99999999, and is arranged with the
+ most significant byte, (MSB) first.
+ BIT #7, of the MSB is also the most
+ significant BIT, and must has a value
+ of 2E0, or 1. Bit #0 is the least
+ significant BIT, and has a value of
+ 2E-31, or 0.00000001.
+
+ Basic "normalizes" its numbers so
+ that the value in the mantissa is
+ always equal to, or greater than 1.
+ This is to prevent leading zeros,
+ which would reduce the accuracy by
+ pushing the least significant bits
+ out of the mantissa. It does this by
+ multipling the mantissa by 2, until
+ all the leading zeros are gone. Then
+ the exponent is reduced by 1 for
+ every "times 2" that was required.
+
+ Now, since the normalized number is
+ always 1 or greater, BIT #7 of the
+ mantissa's MSB will ALWAYS be set.
+ This allows it to be used as the sign
+ bit. When signed math is required,
+ this BIT is checked, and if found
+ set, the number is considered
+ negative. If signed math is
+ NOT required, this BIT is always
+ assumed to be set.
+
+
+ <PRESS F7 & SELECT "GET NEXT ITEM"> 
+                  -::-
+
+ Here is the procedure used to convert
+ a decimal number to its Floating
+ Point equivalent.
+
+ Let's convert PI (3.141592654) to FP.
+
+ 1). Change the number so that it is
+     in the range of 1 to 1.99999999,
+     by multipling or dividing by two,
+     keeping track of the number of
+     times required. Since the number
+     is now too high, we will divide
+     by two.
+
+     3.141592654 / 2 = 1.570796327, so
+     it only took 1 operation.
+     Therefore we will ADD 1 to the
+     exponent byte. 129 + 1 = 130. Now
+     we have the first digit of our FP
+     number, $82 (130).
+
+ 2). Divide this scaled down number by
+     two, so the mantissa's MSB has a
+     value of 2 to the power of -1,
+     rather than a 2 to the power of 0
+     This is the intermediate mantissa
+     .7853981635. This sort of
+     "un-normalizes" it so it can be
+     further evaluated.
+
+ 3). Now, we multipy this new number,
+     .7853981635, by 256, giving us
+     201.061929900. The 1st mantissa
+     digit, is the integer of this
+     number, 201 or $C9. However,
+     since our number is positive, we
+     clear BIT #7, and get $49. This
+     then becomes the second digit in
+     our FP number.
+
+ 4). We now take the fractional part
+     of the above number, .061929900,
+     multiply it by 256, giving us
+     15.854054400. The integer of this
+     $0F (15)is the third digit in our
+     FP number.
+
+ 5). Repeating step 4 using the
+     fractional part .854054400, we
+     get an integer of 218, and a
+     fraction of .637926400. We now
+     have the fourth digit in our FP
+     number, $DA (218).
+
+ 6). Once more we multiply the
+     fraction left over by 256, giving
+     us 163.30915840. Since this is
+     the last digit, we round up if
+     the fraction is greater than .5.
+     Since .3 is less than .5, we'll
+     keep 163, the last digit in our
+     FP number $A3 (163).
+
+ NOTE: This rounding of the last digit
+ is the cause of the minute errors
+ found in some math calculations
+ performed in BASIC.
+
+ FINALLY, the Floating Point
+ equivalent of the decimal 3.141592654
+ is this string of bytes....
+
+         $82 $49 $0F $DA $A3.
+
+
+ <PRESS F7 & SELECT "GET NEXT ITEM"> 
+                  -::-
+
+ Here is the procedure in reverse.
+ Converting to decimal from Floating
+ Point.
+
+ Starting with $82 $49 $0F $DA $A3
+
+ 1). Starting with the exponent byte,
+     we get the true power by
+     subtracting the offset, $81 (129).
+     $82-$81=$01. Therefore, the
+     mantissa will be multiplied by 2
+     to the power of 1, or 2.
+
+ 2). BIT #7 of the next byte is NOT
+     set, so the number is positive.
+     Now that we know that, we have to
+     SET BIT #7 to do the remaining
+     calculations. Therefore $49 is
+     now $C9, and our mantissa is $C9
+     $0F $DA $A3.
+
+ 3). Starting with the LSB, we divide
+     this byte, ($A3) 163 by 256, and
+     get .63671875.
+
+ 4). Now, add this to the next byte,
+     and get 218.63671875. Divide this
+     by 256, and get .85404968.
+
+ 5). Continuing, adding the next byte
+     $0F (15) gives us 15.85404968.
+     Dividing this by 256 returns
+     .061929881.
+
+ 6). Once more, adding the remainding
+     byte $C9 (201), = 201.061929881.
+     Dividing this by 256 gives
+     .7853981635.
+
+ 7). Now, we have our intermediate
+     mantissa, .7853981635. To get the
+     true mantissa, (remember we have
+     to 'normalize' it) we multply
+     this by 2 to raise the mantissa's
+     MSB to the value of 2 to the
+     power of 0, or 1. Now our true
+     normalized mantissa is
+     1.570796327
+
+ 8). Finally, to get the decimal
+     number, we multiply the true
+     mantissa by the exponent value 2,
+     as calculated in step 1 above,
+     and get 3.141592654.
+
+ So, now we have gone from Floating
+ Point designation, back to a decimal
+ number.
+
+ NOTE: In the above, we use 5 bytes to
+ store the FP number. This is the
+ format used when the number is in a
+ variable. When it is in the Floating
+ Point Accumulator, it is stored in 6
+ bytes, and BIT #7 of this sixth byte
+ is now the sign BIT, rather than
+ BIT #7 of the MSB.
+
+
+ R.W. Bob k7 Kober
+
+
+         <PRESS F5 FOR MENU>
