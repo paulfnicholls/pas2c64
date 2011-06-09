@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<CONFIG>
-  <Compiler Value="C:\lazarus\fpc\2.4.2\bin\i386-win32\fpc.exe" Date="1047028774"/>
-  <Params Value=" -Mdelphi -Scghi -O1 -gl -vewnhi -l -FiC:\Programming\Projects\pas2c64\units -FuC:\Programming\Projects\pas2c64\units -FuC:\lazarus\components\synedit\units\i386-win32 -FuC:\lazarus\ideintf\units\i386-win32 -FuC:\lazarus\lcl\units\i386-win32 -FuC:\lazarus\lcl\units\i386-win32\win32 -FuC:\lazarus\packager\units\i386-win32 -FuC:\Programming\Projects\pas2c64\ -Fu. -opas2c64.exe -dLCL -dLCLwin32 pas2c64.lpr"/>
-</CONFIG>
