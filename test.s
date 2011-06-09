@@ -13,11 +13,19 @@ main
 ;convert number in FAC1 to ASCII (pointer in A & Y)
     JSR $BDDD
     
-;How to print string at location in A & Y to screen using $FFD2?
-;$FFD2 expects character in A?
-    
-    JMP L2
+;store address in zero-page
+    STY $FB
+    STA $FB + 1
+    LDY #$00
+L0
+    LDA ($FB),Y
+    BEQ L3
+    JSR $FFD2
+    INY
+    JMP L0
 L1
-    .byte "$87 $48 $00 $00 $00",0
+    .byte $81 $00 $00 $00 $00
 L2
+    .byte 0,0
+L3
     RTS
