@@ -1,2 +1,2 @@
-win2c64.exe test.s
+call KickAssembler\KickAss.bat test.asm
 pause
