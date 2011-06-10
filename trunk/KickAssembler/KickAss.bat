@@ -1,1 +1,0 @@
-java -jar KickAss.jar "%1"
