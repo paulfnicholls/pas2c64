@@ -1,2 +1,2 @@
-call KickAssembler\KickAss.bat test.asm
+call KickAss.bat test.asm
 pause
