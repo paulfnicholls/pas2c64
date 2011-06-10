@@ -76,6 +76,8 @@ begin
     s := s + 8;
     Dec(i);
   end;
+
+  Result := LowerCase(Result);
 end;
 
 constructor TPas2C64_Parser.Create;
@@ -184,13 +186,14 @@ begin
   begin
     FCodeGen.LoadReg_IM(regY,0);
     FCodeGen.WriteLabel(l);
-    FCodeGen.WriteCode('LDA ' + d + ',Y');
-    FCodeGen.WriteCode('BEQ ' + c);
-    FCodeGen.WriteCode('JSR $FFD2');
-    FCodeGen.WriteCode('INY');
-    FCodeGen.WriteCode('JMP ' + l);
+    FCodeGen.WriteCode('lda ' + d + ',Y');
+    FCodeGen.WriteCode('beq ' + c);
+    FCodeGen.WriteCode('jsr $ffd2');
+    FCodeGen.WriteCode('iny');
+    FCodeGen.WriteCode('jmp ' + l);
     FCodeGen.WriteLabel(d);
-    FCodeGen.WriteCode('.byte "' + v.TokenValue + '",0');
+    FCodeGen.WriteCode('.text "' + v.TokenValue + '"');
+    FCodeGen.WriteCode('.byte 0');
     FCodeGen.WriteLabel(c);
   end
   else
@@ -199,26 +202,26 @@ begin
     FloatToC64Float(StrToFloat(v.TokenValue),C64Float);
 
     FCodeGen.WriteComment('load floating point number into FAC1');
-    FCodeGen.WriteCode('LDA #<' + d);
-    FCodeGen.WriteCode('LDY #>' + d);
-    FCodeGen.WriteCode('JSR $BBA2');
+    FCodeGen.WriteCode('lda #<' + d);
+    FCodeGen.WriteCode('ldy #>' + d);
+    FCodeGen.WriteCode('jsr $bba2');
     FCodeGen.WriteCode('');
 
     FCodeGen.WriteComment('convert number in FAC1 to ASCII (pointer in A & Y)');
-    FCodeGen.WriteCode('JSR $BDDD');
+    FCodeGen.WriteCode('jsr $bddd');
     FCodeGen.WriteCode('');
 
     FCodeGen.WriteComment('store address in zero-page');
-    FCodeGen.WriteCode('STA $FB');
-    FCodeGen.WriteCode('STY $FB + 1');
+    FCodeGen.WriteCode('sta $fb');
+    FCodeGen.WriteCode('sty $fb + 1');
 
     FCodeGen.LoadReg_IM(regY,0);
     FCodeGen.WriteLabel(l);
-    FCodeGen.WriteCode('LDA ($FB),Y');
-    FCodeGen.WriteCode('BEQ ' + c);
-    FCodeGen.WriteCode('JSR $FFD2');
-    FCodeGen.WriteCode('INY');
-    FCodeGen.WriteCode('JMP ' + l);
+    FCodeGen.WriteCode('lda ($fb),y');
+    FCodeGen.WriteCode('beq ' + c);
+    FCodeGen.WriteCode('jsr $ffd2');
+    FCodeGen.WriteCode('iny');
+    FCodeGen.WriteCode('jmp ' + l);
 
     FCodeGen.WriteLabel(d);
     FCodeGen.WriteCode('.byte ' + C64FloatToStr(C64Float));
@@ -230,12 +233,12 @@ begin
 
     FCodeGen.LoadReg_IM(regY,0);
     FCodeGen.WriteLabel(l);
-    FCodeGen.WriteCode('LDA ' + d + ',Y');
-    FCodeGen.WriteCode('CMP #0');
-    FCodeGen.WriteCode('BEQ ' + c);
-    FCodeGen.WriteCode('JSR $FFD2');
-    FCodeGen.WriteCode('INY');
-    FCodeGen.WriteCode('JMP ' + l);
+    FCodeGen.WriteCode('lda ' + d + ',Y');
+    FCodeGen.WriteCode('cmp #0');
+    FCodeGen.WriteCode('beq ' + c);
+    FCodeGen.WriteCode('jsr $ffd2');
+    FCodeGen.WriteCode('iny');
+    FCodeGen.WriteCode('jmp ' + l);
     FCodeGen.WriteLabel(d);
     FCodeGen.WriteCode('.byte "' + C64FloatToStr(C64Float) + '",0');
     FCodeGen.WriteLabel(c);}
