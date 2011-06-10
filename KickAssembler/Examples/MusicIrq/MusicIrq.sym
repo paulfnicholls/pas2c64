@@ -1,2 +1,0 @@
-.label irq1=$4033
-.label this=$4030
