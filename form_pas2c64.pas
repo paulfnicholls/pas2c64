@@ -80,7 +80,7 @@ procedure TFormMainForm.Button_CompileAndRunClick(Sender: TObject);
 begin
   CompileCode;
 
-  ShellExecute(handle,'open','test.t64',nil,nil,SW_SHOWNORMAL);
+  ShellExecute(handle,'open','pas2c64_runcode.bat',nil,nil,SW_SHOWNORMAL);
 end;
 
 procedure TFormMainForm.CheckBox_UseBasicLoaderClick(Sender: TObject);
@@ -112,18 +112,14 @@ begin
       else
       begin
         DstStream.Seek(0,soFromBeginning);
-        DstStream.SaveToFile('test.s');
+        DstStream.SaveToFile('pas2c64_output.asm');
 
         DstStream.Seek(0,soFromBeginning);
         SynEdit_AssemblyOutput.BeginUpdate;
         SynEdit_AssemblyOutput.Lines.LoadFromStream(DstStream);
         SynEdit_AssemblyOutput.EndUpdate;
 
-        sl.Add('win2c64.exe test.s');
-        sl.Add('pause');
-        sl.SaveToFile('RunTest.bat');
-
-        ShellExecute(handle,'open','RunTest.bat',nil,nil,SW_SHOWNORMAL);
+        ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
       end;
     except
       on E:Exception do
@@ -154,7 +150,7 @@ begin
     CompileCode;
 
     if not (ssCTRL in Shift) then
-      ShellExecute(handle,'open','test.t64',nil,nil,SW_SHOWNORMAL);
+      ShellExecute(handle,'open','test.prg',nil,nil,SW_SHOWNORMAL);
   end;
 end;
 
@@ -165,7 +161,8 @@ end;
 
 procedure TFormMainForm.Button1Click(Sender: TObject);
 begin
-   RegisterFileType('t64','C:\Shared\WinVICE-2.2-x86\x64.exe') ;
+   RegisterFileType('t64','C:\Shared\WinVICE-2.2-x86\x64.exe');
+   RegisterFileType('prg','C:\Shared\WinVICE-2.2-x86\x64.exe');
 end;
 
 end.

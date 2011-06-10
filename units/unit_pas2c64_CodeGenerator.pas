@@ -102,68 +102,68 @@ type
 
 const
   cRegisterName : array[TRegister] of AnsiString = (
-    'A',
-    'X',
-    'Y'
+    'a',
+    'x',
+    'y'
   );
 
   cOpCodeName : array[TOpCode] of AnsiString = (
-    'ADC',
-    'AND',
-    'ASL',
-    'BCC',
-    'BCS',
-    'BEQ',
-    'BIT',
-    'BMI',
-    'BNE',
-    'BPL',
-    'BRK',
-    'BVC',
-    'BVS',
-    'CLC',
-    'CLD',
-    'CLI',
-    'CLV',
-    'CMP',
-    'CPX',
-    'CPY',
-    'DEC',
-    'DEX',
-    'DEY',
-    'EOR',
-    'INC',
-    'INX',
-    'INY',
-    'JMP',
-    'JSR',
-    'LDA',
-    'LDX',
-    'LDY',
-    'LSR',
-    'NOP',
-    'ORA',
-    'PHA',
-    'PHP',
-    'PLA',
-    'PLP',
-    'ROL',
-    'ROR',
-    'RTI',
-    'RTS',
-    'SBC',
-    'SEC',
-    'SED',
-    'SEI',
-    'STA',
-    'STX',
-    'STY',
-    'TAX',
-    'TAY',
-    'TSX',
-    'TXA',
-    'TXS',
-    'TYA'
+    'adc',
+    'and',
+    'asl',
+    'bcc',
+    'bcs',
+    'beq',
+    'bit',
+    'bmi',
+    'bne',
+    'bpl',
+    'brk',
+    'bvc',
+    'bvs',
+    'clc',
+    'cld',
+    'cli',
+    'clv',
+    'cmp',
+    'cpx',
+    'cpy',
+    'dec',
+    'dex',
+    'dey',
+    'eor',
+    'inc',
+    'inx',
+    'iny',
+    'jmp',
+    'jsr',
+    'lda',
+    'ldx',
+    'ldy',
+    'lsr',
+    'nop',
+    'ora',
+    'pha',
+    'php',
+    'pla',
+    'plp',
+    'rol',
+    'ror',
+    'rti',
+    'rts',
+    'sbc',
+    'sec',
+    'sed',
+    'sei',
+    'sta',
+    'stx',
+    'sty',
+    'tax',
+    'tay',
+    'tsx',
+    'txa',
+    'txs',
+    'tya'
   );
 
   cLoadRegIm = [regA,regX,regY];
@@ -326,8 +326,6 @@ begin
 
   // include sign bit in first mantissa digit
   aC64Float.Mantissa[0] := (aC64Float.Mantissa[0] and $7F) or SignBit;
-
-  C64FloatToStr(aC64Float);
 end;
 
 procedure FloatToC64Float(num: Double; out aC64Float: TC64RegFloat);
@@ -394,8 +392,6 @@ begin
 
   // include sign bit in sign part
   aC64Float.Mantissa[4] := SignBit;
-
-  C64FloatToStr(aC64Float);
 end;
 
 function  C64MemFloat(const aExponent,aMan0,aMan1,aMan2,aMan3: Byte): TC64MemFloat;
@@ -449,8 +445,6 @@ begin
     Result := Result * 2 * Sign * Mult
   else
     Result := Result * 2 * Sign * 1/Mult;
-
-  WriteLn(Format('%.10f',[Result]));
 end;
 
 function  C64FloatToFloat(var aC64Float: TC64RegFloat): Double; overload;
@@ -482,31 +476,29 @@ begin
     Result := Result * 2 * Sign * Mult
   else
     Result := Result * 2 * Sign * {1/}Mult;
-
-  WriteLn(Format('%.10f',[Result]));
 end;
 
 function  C64FloatToStr(var aC64Float: TC64MemFloat): String;
 begin
   //output C64 mem floating point as hex (Exponent, Mantissa)
-  Result := Format('$%.2x $%.2x $%.2x $%.2x $%.2x',// (mem FP)',
+  Result := LowerCase(Format('$%.2x,$%.2x,$%.2x,$%.2x,$%.2x',// (mem FP)',
                  [aC64Float.Exponent,
                   aC64Float.Mantissa[0],
                   aC64Float.Mantissa[1],
                   aC64Float.Mantissa[2],
-                  aC64Float.Mantissa[3]]);
+                  aC64Float.Mantissa[3]]));
 end;
 
 function  C64FloatToStr(var aC64Float: TC64RegFloat): String;
 begin
   //output C64 reg floating point as hex (Exponent, Mantissa, Sign)
-  Result := Format('$%.2x $%.2x $%.2x $%.2x $%.2x $%.2x',// (reg FP)',
+  Result := LowerCase(Format('$%.2x,$%.2x,$%.2x,$%.2x,$%.2x,$%.2x',// (reg FP)',
                  [aC64Float.Exponent,
                   aC64Float.Mantissa[0],
                   aC64Float.Mantissa[1],
                   aC64Float.Mantissa[2],
                   aC64Float.Mantissa[3],
-                  aC64Float.Sign]);
+                  aC64Float.Sign]));
 end;
 
 constructor TCodeGenerator_C64.Create;
@@ -556,12 +548,12 @@ end;
 
 procedure TCodeGenerator_C64.WriteLabel(const aStr: AnsiString);
 begin
-  WriteOutputCR(StringOfChar(cIndentChar,cLabelIndent) + aStr);
+  WriteOutputCR(StringOfChar(cIndentChar,cLabelIndent) + aStr + ':');
 end;
 
 procedure TCodeGenerator_C64.WriteComment(const aStr: AnsiString);
 begin
-  WriteOutputCR(StringOfChar(cIndentChar,cCommentIndent) + ';' + aStr);
+  WriteOutputCR(StringOfChar(cIndentChar,cCommentIndent) + '//' + aStr);
 end;
 
 procedure TCodeGenerator_C64.WriteCode(const aStr: AnsiString);
@@ -576,18 +568,21 @@ end;
 
 procedure TCodeGenerator_C64.WriteProgramStart;
 begin
-  WriteCode('.org $0800 ; start at BASIC');
-  WriteCode('.byte $00 $0c $08 $0a $00 $9e $20 $32 ; encode SYS 2064');
-  WriteCode('.byte $30 $36 $34 $00 $00 $00 $00 $00 ; as BASIC line');
+  WriteCode('.pc = $0800 // start at BASIC');
+  WriteCode('');
+  WriteCode('.import source "rtl\Macros_RTL.asm"');
+  WriteCode('');
+  WriteCode('.byte $00,$0c,$08,$0a,$00,$9e,$20,$32 // encode SYS 2064');
+  WriteCode('.byte $30,$36,$34,$00,$00,$00,$00,$00 // as BASIC line');
   WriteOutputCR;
   WriteLabel('Lab2064');
-  WriteCode('JMP main');
+  WriteCode('jmp main');
 end;
 
 procedure TCodeGenerator_C64.WriteProgramStart(const aCodeAddr: Word);
 begin
   WriteOrigin(aCodeAddr);
-  WriteCode('JMP main');
+  WriteCode('jmp main');
 end;
 
 procedure TCodeGenerator_C64.WriteMainStart;
@@ -600,7 +595,7 @@ begin
   if not(aReg in cLoadRegIM) then
     raise C64OpException.Create('LoadReg_IM: Invalid register "'+cRegisterName[aReg]+'"');
 
-  WriteCode(Format('LD%s #$%.2x',[cRegisterName[aReg],aConstValue]));
+  WriteCode(Format('ld%s #$%.2x',[cRegisterName[aReg],aConstValue]));
 end;
 
 procedure TCodeGenerator_C64.LoadRegW_IM(const aLoReg,aHiReg: TRegister; const aConstValue: Word);
@@ -608,8 +603,8 @@ begin
   if not (aLoReg in cLoadRegIM) or not (aHiReg in cLoadRegIM) then
     raise C64OpException.Create('LoadRegW_IM: Invalid register(s) '+Format('"%s, %s"',[cRegisterName[aLoReg]+cRegisterName[aHiReg]]));
 
-  WriteCode(Format('LD%s <#$%.4x',[cRegisterName[aLoReg],aConstValue]));
-  WriteCode(Format('LD%s >#$%.4x',[cRegisterName[aHiReg],aConstValue]));
+  WriteCode(Format('ld%s <#$%.4x',[cRegisterName[aLoReg],aConstValue]));
+  WriteCode(Format('ld%s >#$%.4x',[cRegisterName[aHiReg],aConstValue]));
 end;
 
 procedure TCodeGenerator_C64.LoadReg_Mem(const aReg: TRegister; const aAddr: Word);
@@ -617,7 +612,7 @@ begin
   if not(aReg in cLoadReg) then
     raise C64OpException.Create('LoadReg_Mem: Invalid register "'+cRegisterName[aReg]+'"');
 
-  WriteCode(Format('LD%s $%.4x',[cRegisterName[aReg],aAddr]));
+  WriteCode(Format('ld%s $%.4x',[cRegisterName[aReg],aAddr]));
 end;
 
 procedure TCodeGenerator_C64.StoreReg(const aReg: TRegister; const aAddr: Word);
@@ -626,9 +621,9 @@ begin
     raise C64OpException.Create('StoreReg: Invalid register "'+cRegisterName[aReg]+'"');
 
   if aAddr <= 255 then
-    WriteCode(Format('ST%s $%.2x',[cRegisterName[aReg],aAddr]))
+    WriteCode(Format('st%s $%.2x',[cRegisterName[aReg],aAddr]))
   else
-    WriteCode(Format('ST%s $%.4x',[cRegisterName[aReg],aAddr]));
+    WriteCode(Format('st%s $%.4x',[cRegisterName[aReg],aAddr]));
 end;
 
 procedure TCodeGenerator_C64.OpCode(const aOpCode: TOpCode);
@@ -644,7 +639,7 @@ begin
 
   if IllegalRegs then raise C64OpException.Create('SwapRegisters: Invalid registers "'+cRegisterName[aSrcReg] + '&' + cRegisterName[aDstReg] +'"');
 
-  WriteCode('T' + cRegisterName[aSrcReg] + cRegisterName[aDstReg]);
+  WriteCode('t' + cRegisterName[aSrcReg] + cRegisterName[aDstReg]);
 end;
 
 procedure TCodeGenerator_C64.OpA(const aOpCode: TOpCode);                        // OPC A
