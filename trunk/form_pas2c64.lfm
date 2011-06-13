@@ -221,6 +221,28 @@ object FormMainForm: TFormMainForm
           MoveCaret = False
           Option = 0
           Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 9
+          MoveCaret = False
+          Option = 0
+          Priority = 0
+        end      
+        item
+          Shift = []
+          ShiftMask = []
+          Button = mbLeft
+          ClickCount = ccSingle
+          ClickDir = cdDown
+          Command = 9
+          MoveCaret = False
+          Option = 0
+          Priority = 0
         end>
       Lines.Strings = (
         'program Test;'
@@ -228,6 +250,7 @@ object FormMainForm: TFormMainForm
         '  WriteLn(''hello world'');'
         'end.'
       )
+      Options = [eoAutoIndent, eoDragDropEditing, eoGroupUndo, eoScrollPastEol, eoSmartTabs, eoTabsToSpaces, eoTrimTrailingSpaces, eoBracketHighlight]
       BracketHighlightStyle = sbhsBoth
       WantTabs = True
       inline SynLeftGutterPartList1: TSynGutterPartList

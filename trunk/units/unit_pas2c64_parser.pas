@@ -184,17 +184,21 @@ begin
 
   if v.TokenType = Token_string then
   begin
-    FCodeGen.LoadReg_IM(regY,0);
+    FCodeGen.WriteCode(':PrintStringConst("'+v.TokenValue+'")');
+{    FCodeGen.LoadReg_IM(regY,0);
     FCodeGen.WriteLabel(l);
     FCodeGen.WriteCode('lda ' + d + ',Y');
     FCodeGen.WriteCode('beq ' + c);
     FCodeGen.WriteCode('jsr $ffd2');
     FCodeGen.WriteCode('iny');
     FCodeGen.WriteCode('jmp ' + l);
+
+//    FCodeGen.WriteCode(':PrintStringAddr('+d+')');
+    FCodeGen.WriteCode('jmp ' + c);
     FCodeGen.WriteLabel(d);
     FCodeGen.WriteCode('.text "' + v.TokenValue + '"');
     FCodeGen.WriteCode('.byte 0');
-    FCodeGen.WriteLabel(c);
+    FCodeGen.WriteLabel(c);}
   end
   else
   if v.TokenType = Token_number then
@@ -211,7 +215,9 @@ begin
     FCodeGen.WriteCode('jsr $bddd');
     FCodeGen.WriteCode('');
 
-    FCodeGen.WriteComment('store address in zero-page');
+    FCodeGen.WriteComment('print ASCII number');
+
+{    FCodeGen.WriteComment('store address in zero-page');
     FCodeGen.WriteCode('sta $fb');
     FCodeGen.WriteCode('sty $fb + 1');
 
@@ -221,7 +227,9 @@ begin
     FCodeGen.WriteCode('beq ' + c);
     FCodeGen.WriteCode('jsr $ffd2');
     FCodeGen.WriteCode('iny');
-    FCodeGen.WriteCode('jmp ' + l);
+    FCodeGen.WriteCode('jmp ' + l);}
+    FCodeGen.WriteCode(':PrintStringAY()');
+    FCodeGen.WriteCode('jmp ' + c);
 
     FCodeGen.WriteLabel(d);
     FCodeGen.WriteCode('.byte ' + C64FloatToStr(C64Float));
