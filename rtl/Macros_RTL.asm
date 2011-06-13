@@ -2,7 +2,8 @@
     :PrintStringAddr(StrData)
     jmp continue
 StrData:
-    .byte Str
+    .text Str
+    .byte 0
 continue:
 }
 

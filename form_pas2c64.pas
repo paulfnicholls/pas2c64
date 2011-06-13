@@ -80,7 +80,7 @@ procedure TFormMainForm.Button_CompileAndRunClick(Sender: TObject);
 begin
   CompileCode;
 
-  ShellExecute(handle,'open','pas2c64_runcode.bat',nil,nil,SW_SHOWNORMAL);
+  ShellExecute(handle,'open','pas2c64_compileandruncode.bat',nil,nil,SW_SHOWNORMAL);
 end;
 
 procedure TFormMainForm.CheckBox_UseBasicLoaderClick(Sender: TObject);
@@ -118,8 +118,6 @@ begin
         SynEdit_AssemblyOutput.BeginUpdate;
         SynEdit_AssemblyOutput.Lines.LoadFromStream(DstStream);
         SynEdit_AssemblyOutput.EndUpdate;
-
-        ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
       end;
     except
       on E:Exception do
@@ -150,13 +148,17 @@ begin
     CompileCode;
 
     if not (ssCTRL in Shift) then
+    begin
+      ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
       ShellExecute(handle,'open','test.prg',nil,nil,SW_SHOWNORMAL);
+    end;
   end;
 end;
 
 procedure TFormMainForm.Button_CompileClick(Sender: TObject);
 begin
-  CompileCode
+  CompileCode;
+  ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
 end;
 
 procedure TFormMainForm.Button1Click(Sender: TObject);
