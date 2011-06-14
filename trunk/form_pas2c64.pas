@@ -16,16 +16,16 @@ type
 
   TFormMainForm = class(TForm)
     GroupBox1: TGroupBox;
-    SynEdit_SourceCode: TSynEdit;
     Panel1: TPanel;
     Button_Compile: TButton;
     Button_CompileAndRun: TButton;
     Splitter: TSplitter;
     GroupBox2: TGroupBox;
-    SynEdit_AssemblyOutput: TSynEdit;
     CheckBox_UseBasicLoader: TCheckBox;
     Edit_CodeAddr: TEdit;
     Label_CodeAddr: TLabel;
+    SynEdit_SourceCode: TSynEdit;
+    SynEdit_AssemblyOutput: TSynEdit;
     SynPasSyn: TSynPasSyn;
     procedure Button1Click(Sender: TObject);
     procedure Button_CompileClick(Sender: TObject);
