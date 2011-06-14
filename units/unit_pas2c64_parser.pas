@@ -68,21 +68,21 @@ type
     property CodeAddr: Word       read FCodeAddr write FCodeAddr;
   end;
 
-function  IntToC64Hex(const aNumber: Int64; const aNumType: TNumType): AnsiString;
+function  IntToC64Hex(const aNumber: Int64; const aIntNumType: TIntNumType): AnsiString;
 
 implementation
 
 uses
   SysUtils;
 
-function  IntToC64Hex(const aNumber: Int64; const aNumType: TNumType): AnsiString;
+function  IntToC64Hex(const aNumber: Int64; const aIntNumType: TIntNumType): AnsiString;
 var
   i,s: Integer;
 begin
   Result := '';
 
   s := 0;
-  case aNumType of
+  case aIntNumType of
     ntInt8, ntUInt8   : i := 1;
     ntInt16, ntUInt16 : i := 2;
     ntInt32, ntUInt32 : i := 4;
@@ -151,29 +151,37 @@ end;
 function  TPas2C64_Parser.ParseSignedFactor: TExpressionNodeList;
 var
   NegativeFactor: Boolean;
-  ThisCount: Integer;
   LastCount: Integer;
   DeltaCount: Integer;
+  Operand: TExpressionOperandNode;
 begin
   NegativeFactor := False;
 
   if Token.TokenType in [Token_plus,Token_minus] then
   begin
-    FExpression.AddOperand('0',Token_intnumber);
+    LastCount := FExpression.GetNodeCount;
+
     NegativeFactor := (Token.TokenType = Token_minus);
 
     Expect(Token.TokenType);
   end;
 
-  ItemCount := FExpression.GetNodeCount;
-
   Result := ParseFactor;
 
   if NegativeFactor then
   begin
-    DeltaCount := FExpression.GetNodeCount - ItemCount;
+    DeltaCount := FExpression.GetNodeCount - LastCount;
 
-    Result := FExpression.AddOperator(eoSub);
+    if DeltaCount > 1 then
+      Result := FExpression.AddOperator(eoNeg)
+    else
+    begin
+      Operand := TExpressionOperandNode(FExpression.GetNode(FExpression.GetNodeCount - 1));
+      if Operand.OperandType = Token_ident then
+        Result := FExpression.AddOperator(eoNeg)
+      else
+        Operand.OperandValue := '-' + Operand.OperandValue;
+    end;
   end;
 end;
 
@@ -270,11 +278,11 @@ procedure TPas2C64_Parser.ParseWriteMemB;
 var
   AddrStr: AnsiString;
   AddrNum: Int64;
-  AddrType: TNumType;
+  AddrType: TIntNumType;
 
   ValueStr: AnsiString;
   ValueNum: Int64;
-  ValueType: TNumType;
+  ValueType: TIntNumType;
 begin
   Expect(Token_lparen);
   AddrStr := GetToken.TokenValue;
@@ -298,11 +306,11 @@ procedure TPas2C64_Parser.ParseCopyMemB;
 var
   SrcAddrStr: AnsiString;
   SrcAddrNum: Int64;
-  SrcAddrType: TNumType;
+  SrcAddrType: TIntNumType;
 
   DstAddrStr: AnsiString;
   DstAddrNum: Int64;
-  DstAddrType: TNumType;
+  DstAddrType: TIntNumType;
 begin
   Expect(Token_lparen);
   SrcAddrStr := GetToken.TokenValue;
@@ -441,7 +449,7 @@ var
   ConstName: AnsiString;
   ConstValue: TToken;
   ConstNum: Int64;
-  ConstType: TNumType;
+  ConstType: TIntNumType;
 begin
   repeat
     ConstName := Token.TokenValue;
@@ -464,7 +472,8 @@ procedure TPas2C64_Parser.ParseVarDecls;
 var
   VarName: AnsiString;
   VarType: AnsiString;
-  VarSize: TNumType;
+  VarSize: TIntNumType;
+  IsSingle: Boolean;
 begin
   repeat
     VarName := Token.TokenValue;
@@ -473,17 +482,24 @@ begin
     Expect(Token_colon);
 
     VarType := LowerCase(Token.TokenValue);
+    IsSingle := False;
 
     if      VarType = 'byte'    then VarSize := ntUInt8
     else if VarType = 'word'    then VarSize := ntUInt16
     else if VarType = 'integer' then VarSize := ntInt16
+    else if VarType = 'single'  then IsSingle := True
     else Error('Var declaration: Illegal type "'+VarType+'"');
 
     Expect(Token_ident);
     Expect(Token_semicolon);
 
     FCodeGen.WriteLabel('var_' + VarName);
-    FCodeGen.WriteCode('.byte ' + IntToC64Hex(0,VarSize));
+    if not IsSingle then
+      FCodeGen.WriteCode('.byte ' + IntToC64Hex(0,VarSize))
+    else
+    begin
+      FCodeGen.WriteCode('.byte $00,$00,$00,$00,$00');
+    end;
   until Token.TokenType in[Token_const,Token_var,Token_begin];
 end;
 

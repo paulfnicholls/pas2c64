@@ -63,8 +63,8 @@ var
   Token_mod          : Integer;
 
 type
-  { TNumType }
-  TNumType = (
+  { TIntNumType }
+  TIntNumType = (
     ntInt8,
     ntUInt8,
     ntInt16,
@@ -73,14 +73,14 @@ type
     ntUInt32
   );
 
-  { TNumTypeRange }
-  TNumTypeRange = record
+  { TIntNumTypeRange }
+  TIntNumTypeRange = record
     MinVal,MaxVal: Int64;
   end;
 
 const
   { cNumTypeRange }
-  cNumTypeRange: array [TNumType] of TNumTypeRange = (
+  cNumTypeRange: array [TIntNumType] of TIntNumTypeRange = (
     (MinVal: - 128;        MaxVal: 127),
     (MinVal: 0;            MaxVal: 255),
     (MinVal: - 32768;      MaxVal: 32767),
@@ -170,7 +170,7 @@ procedure CheckTokenForKeyword(var aToken: TToken);
 function  TokenToStr(const aTokenType: Integer): String;
 function  BinToInt64(aBin: String): Int64;
 function  IntegerInRange(const aNumber,aMin,aMax: Int64): Boolean;
-procedure GetIntegerTypeAndValue(const aNumber: String; var aNumType: TNumType; var aValue: Int64);
+procedure GetIntegerTypeAndValue(const aNumber: String; var aIntNumType: TIntNumType; var aValue: Int64);
 procedure ClearAllTokens;
 
 implementation
@@ -268,14 +268,14 @@ begin
             (aNumber <= aMax);
 end;
 
-procedure GetIntegerTypeAndValue(const aNumber: String; var aNumType: TNumType; var aValue: Int64);
+procedure GetIntegerTypeAndValue(const aNumber: String; var aIntNumType: TIntNumType; var aValue: Int64);
 var
-  i: TNumType;
+  i: TIntNumType;
   v, c: Integer;
 begin
   if aNumber = '' then
   begin
-    aNumType := ntUInt8;
+    aIntNumType := ntUInt8;
     aValue   := 0;
     Exit;
   end;
@@ -290,10 +290,10 @@ begin
   if c <> 0 then
     raise Exception.Create('Invalid number');
 
-  for i := Low(TNumType) to High(TNumType) do
+  for i := Low(TIntNumType) to High(TIntNumType) do
     if IntegerInRange(v, cNumTypeRange[i].MinVal,cNumTypeRange[i].MaxVal) then
     begin
-      aNumType := i;
+      aIntNumType := i;
       AValue := v;
       Exit;
     end;

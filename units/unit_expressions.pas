@@ -9,6 +9,7 @@ uses
 
 type
   TExpressionOperator = (
+    eoNeg,
     eoNot,
     eoMul,
     eoDiv,
@@ -22,6 +23,7 @@ type
 
 const
   cExpressionOps: Array[TExpressionOperator] of String = (
+    'neg',
     'not',
     '*',
     '/',
