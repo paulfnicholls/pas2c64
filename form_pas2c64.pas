@@ -15,7 +15,6 @@ type
   { TFormMainForm }
 
   TFormMainForm = class(TForm)
-    SynPasSyn: TSynPasSyn;
     GroupBox1: TGroupBox;
     SynEdit_SourceCode: TSynEdit;
     Panel1: TPanel;
@@ -27,6 +26,7 @@ type
     CheckBox_UseBasicLoader: TCheckBox;
     Edit_CodeAddr: TEdit;
     Label_CodeAddr: TLabel;
+    SynPasSyn: TSynPasSyn;
     procedure Button1Click(Sender: TObject);
     procedure Button_CompileClick(Sender: TObject);
     procedure Button_CompileAndRunClick(Sender: TObject);
@@ -73,7 +73,7 @@ begin
    reg.Free;
   end;
 
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil) ;
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nil, nil);
 end;
 
 procedure TFormMainForm.Button_CompileAndRunClick(Sender: TObject);
@@ -146,19 +146,21 @@ begin
   if (Key = VK_F9) then
   begin
     CompileCode;
+    Exit;
 
     if not (ssCTRL in Shift) then
-    begin
+    // compile and run
+      ShellExecute(handle,'open','pas2c64_compileandruncode.bat',nil,nil,SW_SHOWNORMAL)
+    else
+    // compile only
       ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
-      ShellExecute(handle,'open','test.prg',nil,nil,SW_SHOWNORMAL);
-    end;
   end;
 end;
 
 procedure TFormMainForm.Button_CompileClick(Sender: TObject);
 begin
   CompileCode;
-  ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
+//  ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
 end;
 
 procedure TFormMainForm.Button1Click(Sender: TObject);

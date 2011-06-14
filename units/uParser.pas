@@ -17,7 +17,8 @@ var
   Token_unknown      : Integer;
   Token_eof          : Integer;
   Token_ident        : Integer;
-  Token_number       : Integer;
+  Token_intnumber    : Integer;
+  Token_fracnumber   : Integer;
   Token_string       : Integer;
   Token_colon        : Integer;
   Token_lparen       : Integer;
@@ -56,6 +57,10 @@ var
   Token_do           : Integer;
   Token_const        : Integer;
   Token_program      : Integer;
+  Token_and          : Integer;
+  Token_or           : Integer;
+  Token_div          : Integer;
+  Token_mod          : Integer;
 
 type
   { TNumType }
@@ -307,7 +312,8 @@ begin
   Token_unknown      := RegisterGenericToken('Unknown');
   Token_eof          := RegisterGenericToken('EOF');
   Token_ident        := RegisterGenericToken('Ident');
-  Token_number       := RegisterGenericToken('Number');
+  Token_intnumber    := RegisterGenericToken('Integer');
+  Token_fracnumber   := RegisterGenericToken('Single');
   Token_string       := RegisterGenericToken('String');
 
   RegisterGenericTokens;
@@ -400,7 +406,7 @@ procedure TBaseParser.GetDecNumber;
 begin
   if not IsDecDigit(FCharacter) then Error('Number expected');
 
-  FToken.TokenType  := Token_number;
+  FToken.TokenType  := Token_intnumber;
   FToken.TokenValue := '';
 
   while (FCharacter <> #0) and IsDecDigit(FCharacter) do
@@ -408,6 +414,39 @@ begin
     FToken.TokenValue := FToken.TokenValue + FCharacter;
     GetCharacter;
   end;
+
+  if FCharacter = '.' then
+  begin
+    FToken.TokenType  := Token_fracnumber;
+  // get fractional part of number
+    FToken.TokenValue := FToken.TokenValue + FCharacter;
+    GetCharacter;
+
+    while (FCharacter <> #0) and IsDecDigit(FCharacter) do
+    begin
+      FToken.TokenValue := FToken.TokenValue + FCharacter;
+      GetCharacter;
+    end;
+  end;
+
+  // get any scientific part of number
+  if LowerCase(FCharacter) = 'e' then
+  begin
+    // parse 'e' part
+    FToken.TokenValue := FToken.TokenValue + FCharacter;
+    GetCharacter;
+
+    // parse +/- number part
+    FToken.TokenValue := FToken.TokenValue + FCharacter;
+    GetCharacter;
+
+    while (FCharacter <> #0) and IsDecDigit(FCharacter) do
+    begin
+      FToken.TokenValue := FToken.TokenValue + FCharacter;
+      GetCharacter;
+    end;
+  end;
+
   SkipWhiteSpaces;
 end;
 
@@ -415,7 +454,7 @@ procedure TBaseParser.GetHexNumber;
 begin
   if FCharacter <> '$' then Error('Number expected');
 
-  FToken.TokenType  := Token_number;
+  FToken.TokenType  := Token_intnumber;
   FToken.TokenValue := FCharacter;
 
   GetCharacter;
@@ -432,7 +471,7 @@ procedure TBaseParser.GetBinNumber;
 begin
   if FCharacter <> '%' then Error('Number expected');
 
-  FToken.TokenType  := Token_number;
+  FToken.TokenType  := Token_intnumber;
   FToken.TokenValue := FCharacter;
 
   GetCharacter;
@@ -714,6 +753,10 @@ begin
   Token_do           := RegisterKeywordToken('do');
   Token_const        := RegisterKeywordToken('const');
   Token_program      := RegisterKeywordToken('program');
+  Token_and          := RegisterKeywordToken('and');
+  Token_or           := RegisterKeywordToken('or');
+  Token_div          := RegisterKeywordToken('div');
+  Token_mod          := RegisterKeywordToken('mod');
 end;
 
 procedure ClearAllTokens;

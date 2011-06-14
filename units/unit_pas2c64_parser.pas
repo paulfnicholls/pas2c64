@@ -9,7 +9,8 @@ uses
   Classes,
   uParser,
   unit_pas2c64_CodeGenerator,
-  unit_pas2c64_symboltable;
+  unit_pas2c64_symboltable,
+  unit_Expressions;
 
 // tokens
 var
@@ -26,6 +27,23 @@ type
     FCodeAddr    : Word;
     FSymbolTable : TPas2C64_SymbolTable;
     FCodeGen     : TCodeGenerator_C64;
+    FExpression  : TExpressionNodeList;
+
+    function  ParseFactor: TExpressionNodeList;
+    function  ParseSignedFactor: TExpressionNodeList;
+
+    function  ParseNot: TExpressionNodeList;
+    function  ParseMultiply: TExpressionNodeList;
+    function  ParseDivide: TExpressionNodeList;
+    function  ParseIntDiv: TExpressionNodeList;
+    function  ParseIntMod: TExpressionNodeList;
+    function  ParseAnd: TExpressionNodeList;
+    function  ParseTerm: TExpressionNodeList;
+
+    function  ParseAdd: TExpressionNodeList;
+    function  ParseSubtract: TExpressionNodeList;
+    function  ParseOr: TExpressionNodeList;
+    function  ParseExpression(const aNewExpression: Boolean): TExpressionNodeList;
 
     // statements types
     procedure ParseWriteMemB;
@@ -86,10 +104,12 @@ begin
 
   FCodeGen  := TCodeGenerator_C64.Create;
   FCodeAddr := $0000;
+  FExpression := TExpressionNodeList.Create;
 end;
 
 destructor  TPas2C64_Parser.Destroy;
 begin
+  FExpression.Free;
   FCodeGen.Free;
   inherited Destroy;
 end;
@@ -109,6 +129,139 @@ begin
   Token_copymemb  := RegisterKeywordToken('CopyMemB');
   Token_write     := RegisterKeywordToken('Write');
   Token_writeln   := RegisterKeywordToken('WriteLn');
+end;
+
+function  TPas2C64_Parser.ParseFactor: TExpressionNodeList;
+var
+  v: TToken;
+begin
+  if Accept(Token_lparen) then
+  // factor is an expression, so parse expression
+  begin
+    Result := ParseExpression(False);
+    Expect(Token_rparen);
+  end
+  else
+  begin
+    v := GetToken;
+    Result := FExpression.AddOperand(v.TokenValue,v.TokenType);
+  end;
+end;
+
+function  TPas2C64_Parser.ParseSignedFactor: TExpressionNodeList;
+var
+  NegativeFactor: Boolean;
+  ThisCount: Integer;
+  LastCount: Integer;
+  DeltaCount: Integer;
+begin
+  NegativeFactor := False;
+
+  if Token.TokenType in [Token_plus,Token_minus] then
+  begin
+    FExpression.AddOperand('0',Token_intnumber);
+    NegativeFactor := (Token.TokenType = Token_minus);
+
+    Expect(Token.TokenType);
+  end;
+
+  ItemCount := FExpression.GetNodeCount;
+
+  Result := ParseFactor;
+
+  if NegativeFactor then
+  begin
+    DeltaCount := FExpression.GetNodeCount - ItemCount;
+
+    Result := FExpression.AddOperator(eoSub);
+  end;
+end;
+
+function  TPas2C64_Parser.ParseNot: TExpressionNodeList;
+begin
+  Result := ParseSignedFactor;
+  Result := FExpression.AddOperator(eoNot);
+end;
+
+function  TPas2C64_Parser.ParseMultiply: TExpressionNodeList;
+begin
+  Result := ParseSignedFactor;
+  Result := FExpression.AddOperator(eoMul);
+end;
+
+function  TPas2C64_Parser.ParseDivide: TExpressionNodeList;
+begin
+  Result := ParseSignedFactor;
+  Result := FExpression.AddOperator(eoDiv);
+end;
+
+function  TPas2C64_Parser.ParseIntDiv: TExpressionNodeList;
+begin
+  Result := ParseSignedFactor;
+  Result := FExpression.AddOperator(eoIntDiv);
+end;
+
+function  TPas2C64_Parser.ParseIntMod: TExpressionNodeList;
+begin
+  Result := ParseSignedFactor;
+  Result := FExpression.AddOperator(eoIntMod);
+end;
+
+function  TPas2C64_Parser.ParseAnd: TExpressionNodeList;
+begin
+  Result := ParseSignedFactor;
+  Result := FExpression.AddOperator(eoAnd);
+end;
+
+function  TPas2C64_Parser.ParseTerm: TExpressionNodeList;
+begin
+  Result := ParseSignedFactor;
+
+  while Token.TokenType in [Token_times,Token_slash,Token_div,Token_mod,Token_and] do
+  begin
+    if      Accept(Token_times) then Result := ParseMultiply
+    else if Accept(Token_slash) then Result := ParseDivide
+    else if Accept(Token_div)   then Result := ParseIntDiv
+    else if Accept(Token_mod)   then Result := ParseIntMod
+    else if Accept(Token_and)   then Result := ParseAnd;
+  end;
+end;
+
+function  TPas2C64_Parser.ParseAdd: TExpressionNodeList;
+begin
+  Result := ParseTerm;
+  Result := FExpression.AddOperator(eoAdd);
+end;
+
+function  TPas2C64_Parser.ParseSubtract: TExpressionNodeList;
+begin
+  Result := ParseTerm;
+  Result := FExpression.AddOperator(eoSub);
+end;
+
+function  TPas2C64_Parser.ParseOr: TExpressionNodeList;
+begin
+  Result := ParseTerm;
+  Result := FExpression.AddOperator(eoOr);
+end;
+
+function  TPas2C64_Parser.ParseExpression(const aNewExpression: Boolean): TExpressionNodeList;
+begin
+  try
+    if aNewExpression then FExpression.Clear;
+
+    Result := ParseTerm;
+
+    while Token.TokenType in [Token_plus,Token_minus,Token_or] do
+    begin
+      if      Accept(Token_plus)  then Result := ParseAdd
+      else if Accept(Token_minus) then Result := ParseSubtract
+      else if Accept(Token_or)    then Result := ParseOr;
+    end;
+  except
+    on E:Exception do
+      Error(E.Message);
+  end;
 end;
 
 // statements
@@ -173,6 +326,7 @@ var
   v: TToken;
   c,l,d,t: AnsiString;
   C64Float: TC64MemFloat;
+  e: TExpressionNodeList;
 begin
   l := FCodeGen.NewLabel;
   d := FCodeGen.NewLabel;
@@ -180,6 +334,15 @@ begin
   c := FCodeGen.NewLabel;
 
   Expect(Token_lparen);
+
+  e := ParseExpression(True);
+
+  Expect(Token_rparen);
+
+  WriteLn('Expression:');
+  e.WriteExpression;
+
+  Exit;
   v := GetToken;
 
   if v.TokenType = Token_string then
@@ -201,7 +364,7 @@ begin
     FCodeGen.WriteLabel(c);}
   end
   else
-  if v.TokenType = Token_number then
+  if v.TokenType in [Token_intnumber,Token_fracnumber] then
   begin
     FloatToC64Float(StrToFloat(v.TokenValue),C64Float);
 
@@ -333,21 +496,6 @@ begin
   DstStream.Seek(0,soFromBeginning);
   FCodeGen.SetOutputStream(DstStream);
 
-{  FCodeGen.OpA(opLDA);          // OPC A
-  FCodeGen.OpAbs(opLDA,$5511);  // OPC $HHLL
-  FCodeGen.OpAbsX(opLDA,$5511); // OPC $HHLL,X
-  FCodeGen.OpAbsY(opLDA,$5511); // OPC $HHLL,Y
-  FCodeGen.OpImmed(opLDA,$55);  // OPC #$BB
-  FCodeGen.OpImpl(opLDA);       // OPC
-  FCodeGen.OpInd(opLDA,$5511);  // OPC ($HHLL)
-  FCodeGen.OpXInd(opLDA,$55);   // OPC ($BB,X)
-  FCodeGen.OpIndY(opLDA,$55);   // OPC ($LL),Y
-  FCodeGen.OpRel(opLDA,$55);    // OPC $BB
-  FCodeGen.OpZpg(opLDA,$55);    // OPC $LL
-  FCodeGen.OpZpgX(opLDA,$55);   // OPC $LL,X
-  FCodeGen.OpZpgY(opLDA,$55);   // OPC $LL,Y
-
-  Exit;}
   Expect(Token_program);
 
   ProgName := Token.TokenValue;
