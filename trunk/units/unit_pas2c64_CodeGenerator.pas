@@ -563,12 +563,16 @@ end;
 
 procedure TCodeGenerator_C64.WriteOrigin(const aAddr: Word);
 begin
-  WriteOutputCR(StringOfChar(cIndentChar,cCodeIndent) + '.org $' + IntToHex(aAddr,4));
+  WriteOutputCR(StringOfChar(cIndentChar,cCodeIndent) + '.pc = $' + LowerCase(IntToHex(aAddr,4)));
 end;
 
 procedure TCodeGenerator_C64.WriteProgramStart;
 begin
-  WriteCode('.pc = $0800 // start at BASIC');
+  WriteCode(':BasicUpstart2(main) // 10 sys <start address>');
+  WriteCode('');
+  WriteCode('.import source "rtl\Macros_RTL.asm"');
+  WriteCode('');
+{  WriteCode('.pc = $0800 // start at BASIC');
   WriteCode('');
   WriteCode('.import source "rtl\Macros_RTL.asm"');
   WriteCode('');
@@ -576,12 +580,14 @@ begin
   WriteCode('.byte $30,$36,$34,$00,$00,$00,$00,$00 // as BASIC line');
   WriteOutputCR;
   WriteLabel('Lab2064');
-  WriteCode('jmp main');
+  WriteCode('jmp start');}
 end;
 
 procedure TCodeGenerator_C64.WriteProgramStart(const aCodeAddr: Word);
 begin
   WriteOrigin(aCodeAddr);
+  WriteCode('.import source "rtl\Macros_RTL.asm"');
+  WriteCode('');
   WriteCode('jmp main');
 end;
 
@@ -649,22 +655,22 @@ end;
 
 procedure TCodeGenerator_C64.OpAbs(const aOpCode: TOpCode; const aAddr: Word);   // OPC $HHLL
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' $' + IntToHex(aAddr,4));
+  WriteCode(cOpCodeName[aOpCode] + ' $' + LowerCase(IntToHex(aAddr,4)));
 end;
 
 procedure TCodeGenerator_C64.OpAbsX(const aOpCode: TOpCode; const aAddr: Word);  // OPC $HHLL,X
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' $' + IntToHex(aAddr,4) + ',X');
+  WriteCode(cOpCodeName[aOpCode] + ' $' + LowerCase(IntToHex(aAddr,4) + ',X'));
 end;
 
 procedure TCodeGenerator_C64.OpAbsY(const aOpCode: TOpCode; const aAddr: Word);  // OPC $HHLL,Y
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' $' + IntToHex(aAddr,4) + ',Y');
+  WriteCode(cOpCodeName[aOpCode] + ' $' + LowerCase(IntToHex(aAddr,4) + ',Y'));
 end;
 
 procedure TCodeGenerator_C64.OpImmed(const aOpCode: TOpCode; const aValue: Byte); // OPC #$BB
 begin
-  WriteCode(cOpCodeName[aOpCode] + '#$' + IntToHex(aValue,2));
+  WriteCode(cOpCodeName[aOpCode] + '#$' + LowerCase(IntToHex(aValue,2)));
 end;
 
 procedure TCodeGenerator_C64.OpImpl(const aOpCode: TOpCode);                      // OPC
@@ -674,37 +680,37 @@ end;
 
 procedure TCodeGenerator_C64.OpInd(const aOpCode: TOpCode; const aAddr: Word);   // OPC ($HHLL)
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' ($' + IntToHex(aAddr,4) + ')');
+  WriteCode(cOpCodeName[aOpCode] + ' ($' + LowerCase(IntToHex(aAddr,4) + ')'));
 end;
 
 procedure TCodeGenerator_C64.OpXInd(const aOpCode: TOpCode; const aAddr: Byte);  // OPC ($BB,X)
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' ($' + IntToHex(aAddr,2) + ',X)');
+  WriteCode(cOpCodeName[aOpCode] + ' ($' + LowerCase(IntToHex(aAddr,2) + ',X)'));
 end;
 
 procedure TCodeGenerator_C64.OpIndY(const aOpCode: TOpCode; const aAddr: Byte);  // OPC ($LL),Y
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' ($' + IntToHex(aAddr,2) + '),Y');
+  WriteCode(cOpCodeName[aOpCode] + ' ($' + LowerCase(IntToHex(aAddr,2) + '),Y'));
 end;
 
 procedure TCodeGenerator_C64.OpRel(const aOpCode: TOpCode; const aAddr: Byte);   // OPC $BB
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' $' + IntToHex(aAddr,2));
+  WriteCode(cOpCodeName[aOpCode] + ' $' + LowerCase(IntToHex(aAddr,2)));
 end;
 
 procedure TCodeGenerator_C64.OpZpg(const aOpCode: TOpCode; const aAddr: Byte);   // OPC $LL
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' $' + IntToHex(aAddr,2));
+  WriteCode(cOpCodeName[aOpCode] + ' $' + LowerCase(IntToHex(aAddr,2)));
 end;
 
 procedure TCodeGenerator_C64.OpZpgX(const aOpCode: TOpCode; const aAddr: Byte);  // OPC $LL,X
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' $' + IntToHex(aAddr,2) + ',X');
+  WriteCode(cOpCodeName[aOpCode] + ' $' + LowerCase(IntToHex(aAddr,2) + ',X'));
 end;
 
 procedure TCodeGenerator_C64.OpZpgY(const aOpCode: TOpCode; const aAddr: Byte);  // OPC $LL,Y
 begin
-  WriteCode(cOpCodeName[aOpCode] + ' $' + IntToHex(aAddr,2) + ',Y');
+  WriteCode(cOpCodeName[aOpCode] + ' $' + LowerCase(IntToHex(aAddr,2) + ',Y'));
 end;
 
 end.
