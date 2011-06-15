@@ -8,18 +8,20 @@ uses
   Classes;
 
 const
-  cClass_Constant  = 0;
-  cClass_Variable  = 1;
-  cClass_Procedure = 2;
+  cSymClass_None      = -1;
+  cSymClass_Constant  = 0;
+  cSymClass_Variable  = 1;
+  cSymClass_Procedure = 2;
 
-  cSubClass_None   = -1;
-  cSubClass_Int8   = 0;
-  cSubClass_Int16  = 1;
-  cSubClass_Int32  = 2;
-  cSubClass_UInt8  = 3;
-  cSubClass_UInt16 = 4;
-  cSubClass_UInt32 = 5;
-  cSubClass_Float  = 6;
+  cSymSubClass_None   = -1;
+  cSymSubClass_SInt8  = 0;
+  cSymSubClass_SInt16 = 1;
+  cSymSubClass_SInt32 = 2;
+  cSymSubClass_UInt8  = 3;
+  cSymSubClass_UInt16 = 4;
+  cSymSubClass_UInt32 = 5;
+  cSymSubClass_Float  = 6;
+  cSymSubClass_String = 7;
 
 type
   TSymbol = class

@@ -29,6 +29,11 @@ type
     FCodeGen     : TCodeGenerator_C64;
     FExpression  : TExpressionNodeList;
 
+    procedure GetConstInfo(const aToken: TToken;
+                           var   aSymClass,aSymSubClass: Integer;
+                           var   aConstNum: Int64;
+                           var   aConstType: TIntNumType);
+
     function  ParseFactor: TExpressionNodeList;
     function  ParseSignedFactor: TExpressionNodeList;
 
@@ -83,9 +88,9 @@ begin
 
   s := 0;
   case aIntNumType of
-    ntInt8, ntUInt8   : i := 1;
-    ntInt16, ntUInt16 : i := 2;
-    ntInt32, ntUInt32 : i := 4;
+    ntSInt8, ntUInt8   : i := 1;
+    ntSInt16, ntUInt16 : i := 2;
+    ntSInt32, ntUInt32 : i := 4;
   end;
 
   while i > 0 do
@@ -102,13 +107,15 @@ constructor TPas2C64_Parser.Create;
 begin
   inherited Create;
 
-  FCodeGen  := TCodeGenerator_C64.Create;
-  FCodeAddr := $0000;
-  FExpression := TExpressionNodeList.Create;
+  FCodeGen     := TCodeGenerator_C64.Create;
+  FCodeAddr    := $0000;
+  FSymbolTable := TPas2C64_SymbolTable.Create;
+  FExpression  := TExpressionNodeList.Create;
 end;
 
 destructor  TPas2C64_Parser.Destroy;
 begin
+  FSymbolTable.Free;
   FExpression.Free;
   FCodeGen.Free;
   inherited Destroy;
@@ -129,6 +136,35 @@ begin
   Token_copymemb  := RegisterKeywordToken('CopyMemB');
   Token_write     := RegisterKeywordToken('Write');
   Token_writeln   := RegisterKeywordToken('WriteLn');
+end;
+
+procedure TPas2C64_Parser.GetConstInfo(const aToken: TToken;
+                                       var   aSymClass,aSymSubClass: Integer;
+                                       var   aConstNum: Int64;
+                                       var   aConstType: TIntNumType);
+begin
+  aSymClass    := cSymClass_Constant;
+  aSymSubClass := cSymSubClass_None;
+
+  if aToken.TokenType = Token_string then
+    aSymSubClass := cSymSubClass_String
+  else
+  if aToken.TokenType = Token_fracnumber then
+    aSymSubClass := cSymSubClass_Float
+  else
+  if aToken.TokenType = Token_intnumber then
+  begin
+    GetIntegerTypeAndValue(aToken.TokenValue,aConstType,aConstNum);
+
+    case aConstType of
+      ntSInt8  : aSymSubClass := cSymSubClass_SInt8;
+      ntUInt8  : aSymSubClass := cSymSubClass_UInt8;
+      ntSInt16 : aSymSubClass := cSymSubClass_SInt16;
+      ntUInt16 : aSymSubClass := cSymSubClass_UInt16;
+      ntSInt32 : aSymSubClass := cSymSubClass_SInt32;
+      ntUInt32 : aSymSubClass := cSymSubClass_UInt32;
+    end;
+  end;
 end;
 
 function  TPas2C64_Parser.ParseFactor: TExpressionNodeList;
@@ -450,57 +486,127 @@ var
   ConstValue: TToken;
   ConstNum: Int64;
   ConstType: TIntNumType;
+  IsSingle: Boolean;
+  f: TC64MemFloat;
+  Symbol: TSymbol;
+  SymClass,SymSubClass: Integer;
 begin
   repeat
     ConstName := Token.TokenValue;
 
     Expect(Token_ident);
+
+    if FSymbolTable.SymbolExists(ConstName) then
+      Error('Constant declaration: Identifer "'+ConstName+'" redeclared!');
+
     Expect(Token_eql);
 
     ConstValue := GetToken;
 
-    GetIntegerTypeAndValue(ConstValue.TokenValue,ConstType,ConstNum);
+    IsSingle := ConstValue.TokenType = Token_fracnumber;
+
+    GetConstInfo(ConstValue,SymClass,SymSubClass,ConstNum,ConstType);
 
     Expect(Token_semicolon);
 
+    // add const to symbol table
+    FSymbolTable.AddSymbol(ConstName,ConstValue.TokenValue,SymClass,SymSubClass);
+
+    if SymSubClass = cSymSubClass_String then
+      FCodeGen.WriteCode('.byte '+IntToStr(Length(ConstValue.TokenValue)) + '  // string length');
+
     FCodeGen.WriteLabel('const_' + ConstName);
-    FCodeGen.WriteCode('.byte ' + IntToC64Hex(ConstNum,ConstType));
+
+    if not (SymSubClass in [cSymSubClass_Float,cSymSubClass_String]) then
+      FCodeGen.WriteCode('.byte ' + IntToC64Hex(ConstNum,ConstType))
+    else
+    if SymSubClass = cSymSubClass_String then
+    begin
+      FCodeGen.WriteCode('.text "' + ConstValue.TokenValue + '"');
+      FCodeGen.WriteCode('.byte 0');
+    end
+    else
+    if SymSubClass = cSymSubClass_Float then
+    begin
+      FloatToC64Float(StrToFloat(ConstValue.TokenValue),f);
+      FCodeGen.WriteCode('.byte ' + C64FloatToStr(f));
+    end
+    else
+      Error('Constant declaration: Illegal token "'+ConstName+'"!');
   until Token.TokenType in[Token_const,Token_var,Token_begin];
 end;
 
 procedure TPas2C64_Parser.ParseVarDecls;
 var
-  VarName: AnsiString;
+  VarNames: TStringList;
   VarType: AnsiString;
   VarSize: TIntNumType;
   IsSingle: Boolean;
+  IsString: Boolean;
+  i: Integer;
 begin
-  repeat
-    VarName := Token.TokenValue;
+  VarNames := TStringList.Create;
+  try
+    repeat
+      if FSymbolTable.SymbolExists(Token.TokenValue) then
+        Error('Var declaration: Identifer "'+Token.TokenValue+'" redeclared!');
 
-    Expect(Token_ident);
-    Expect(Token_colon);
+      VarNames.Add(Token.TokenValue);
+      Expect(Token_ident);
 
-    VarType := LowerCase(Token.TokenValue);
-    IsSingle := False;
+      while Token.TokenType = Token_comma do
+      begin
+        Expect(Token_comma);
 
-    if      VarType = 'byte'    then VarSize := ntUInt8
-    else if VarType = 'word'    then VarSize := ntUInt16
-    else if VarType = 'integer' then VarSize := ntInt16
-    else if VarType = 'single'  then IsSingle := True
-    else Error('Var declaration: Illegal type "'+VarType+'"');
+        if FSymbolTable.SymbolExists(Token.TokenValue) then
+          Error('Var declaration: Identifer "'+Token.TokenValue+'" redeclared!');
 
-    Expect(Token_ident);
-    Expect(Token_semicolon);
+        VarNames.Add(Token.TokenValue);
+        Expect(Token_ident);
+      end;
+      Expect(Token_colon);
 
-    FCodeGen.WriteLabel('var_' + VarName);
-    if not IsSingle then
-      FCodeGen.WriteCode('.byte ' + IntToC64Hex(0,VarSize))
-    else
-    begin
-      FCodeGen.WriteCode('.byte $00,$00,$00,$00,$00');
-    end;
-  until Token.TokenType in[Token_const,Token_var,Token_begin];
+      VarType  := LowerCase(Token.TokenValue);
+      IsSingle := False;
+      IsString := False;
+
+      if      VarType = 'integer' then VarSize := ntSInt16
+      else if VarType = 'single'  then IsSingle := True
+      else if VarType = 'string'  then IsString := True
+      else Error('Var declaration: Illegal variable type "'+VarType+'"');
+
+      Expect(Token_ident);
+      Expect(Token_semicolon);
+
+      for i := 0 to VarNames.Count - 1 do
+      begin
+        if IsString then
+          FCodeGen.WriteCode('.byte 0 // string length');
+
+        FCodeGen.WriteLabel('var_' + VarNames.Strings[i]);
+        if IsString then
+        begin
+          FCodeGen.WriteCode('.fill 256, 0 // 255 string chars + null byte end');
+          FSymbolTable.AddSymbol(VarNames.Strings[i],'',cSymClass_Variable,cSymSubClass_String);
+        end
+        else
+        if IsSingle then
+        begin
+          FCodeGen.WriteCode('.byte $00,$00,$00,$00,$00');
+          FSymbolTable.AddSymbol(VarNames.Strings[i],'',cSymClass_Variable,cSymSubClass_Float);
+        end
+        else
+        // is integer
+        begin
+          FCodeGen.WriteCode('.byte ' + IntToC64Hex(0,VarSize));
+          FSymbolTable.AddSymbol(VarNames.Strings[i],'',cSymClass_Variable,cSymSubClass_SInt16);
+        end;
+      end;
+      VarNames.Clear;
+    until Token.TokenType in[Token_const,Token_var,Token_begin];
+  finally
+    VarNames.Free;
+  end;
 end;
 
 procedure TPas2C64_Parser.ParseInput;

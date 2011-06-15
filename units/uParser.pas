@@ -65,11 +65,11 @@ var
 type
   { TIntNumType }
   TIntNumType = (
-    ntInt8,
+    ntSInt8,
     ntUInt8,
-    ntInt16,
+    ntSInt16,
     ntUInt16,
-    ntInt32,
+    ntSInt32,
     ntUInt32
   );
 
@@ -288,7 +288,7 @@ begin
     Val(aNumber, v, c);
 
   if c <> 0 then
-    raise Exception.Create('Invalid number');
+    raise TParseException.Create('Invalid number');
 
   for i := Low(TIntNumType) to High(TIntNumType) do
     if IntegerInRange(v, cNumTypeRange[i].MinVal,cNumTypeRange[i].MaxVal) then
@@ -298,7 +298,7 @@ begin
       Exit;
     end;
 
-  raise Exception.Create('Invalid number');
+  raise TParseException.Create('Invalid number');
 end;
 
 { --- TBaseParser ----------------------------------------------------------- }
