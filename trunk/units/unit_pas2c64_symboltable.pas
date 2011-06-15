@@ -12,6 +12,7 @@ const
   cSymClass_Constant  = 0;
   cSymClass_Variable  = 1;
   cSymClass_Procedure = 2;
+  cSymClass_Interrupt = 3;
 
   cSymSubClass_None   = -1;
   cSymSubClass_SInt8  = 0;

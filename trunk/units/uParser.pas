@@ -48,6 +48,7 @@ var
   // Keyword tokens
   Token_var          : Integer;
   Token_proc         : Integer;
+  Token_interrupt    : Integer;
   Token_begin        : Integer;
   Token_end          : Integer;
   Token_if           : Integer;
@@ -744,6 +745,7 @@ procedure TBaseParser.RegisterKeywordTokens;
 begin
   Token_var          := RegisterKeywordToken('var');
   Token_proc         := RegisterKeywordToken('procedure');
+  Token_interrupt    := RegisterKeywordToken('interrupt');
   Token_begin        := RegisterKeywordToken('begin');
   Token_end          := RegisterKeywordToken('end');
   Token_if           := RegisterKeywordToken('if');
