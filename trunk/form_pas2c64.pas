@@ -146,7 +146,6 @@ begin
   if (Key = VK_F9) then
   begin
     CompileCode;
-    Exit;
 
     if not (ssCTRL in Shift) then
     // compile and run
@@ -160,7 +159,7 @@ end;
 procedure TFormMainForm.Button_CompileClick(Sender: TObject);
 begin
   CompileCode;
-//  ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
+  ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
 end;
 
 procedure TFormMainForm.Button1Click(Sender: TObject);

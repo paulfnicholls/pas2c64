@@ -20,6 +20,10 @@ var
   Token_copymemb  : Integer;
   Token_write     : Integer;
   Token_writeln   : Integer;
+  Token_interrupt : Integer;
+  Token_incmemb   : Integer;
+  Token_setint    : Integer;
+  Token_stdirq    : Integer;
 
 type
   TPas2C64_Parser = class(TBaseParser)
@@ -53,6 +57,9 @@ type
     // statements types
     procedure ParseWriteMemB;
     procedure ParseCopyMemB;
+    procedure ParseIncMemB;
+    procedure ParseStdIRQ;
+    procedure ParseSetInterrupt;
     procedure ParseWriteLn;
 
     procedure ParseProcedureCall(const aSym: TSymbol);
@@ -67,7 +74,6 @@ type
     procedure ParseVarDecls;
 
     procedure ParseProcDecl;
-    procedure ParseInterruptDecl;
   protected
     procedure RegisterGenericTokens; override;
     procedure RegisterKeywordTokens; override;
@@ -142,6 +148,10 @@ begin
   Token_copymemb  := RegisterKeywordToken('CopyMemB');
   Token_write     := RegisterKeywordToken('Write');
   Token_writeln   := RegisterKeywordToken('WriteLn');
+  Token_interrupt := RegisterKeywordToken('Interrupt');
+  Token_incmemb   := RegisterKeywordToken('IncMemB');
+  Token_setint    := RegisterKeywordToken('SetInterrupt');
+  Token_stdirq    := RegisterKeywordToken('StdIRQ');
 end;
 
 procedure TPas2C64_Parser.GetConstInfo(const aToken: TToken;
@@ -371,6 +381,57 @@ begin
   FCodeGen.StoreReg(regA,DstAddrNum);
 end;
 
+procedure TPas2C64_Parser.ParseIncMemB;
+var
+  AddrStr: AnsiString;
+  AddrNum: Int64;
+  AddrType: TIntNumType;
+begin
+  Expect(Token_lparen);
+
+  AddrStr := GetToken.TokenValue;
+  GetIntegerTypeAndValue(AddrStr,AddrType,AddrNum);
+  if not IntegerInRange(AddrNum,$0000,$FFFF) then Error('IncMemB: Destination address out of range [$0000,$FFFF]');
+
+  Expect(Token_rparen);
+
+  FCodeGen.WriteCode(LowerCase(Format('inc $%.4x',[AddrNum])));
+end;
+
+procedure TPas2C64_Parser.ParseStdIRQ;
+begin
+  FCodeGen.WriteCode('jmp STDIRQ');
+end;
+
+procedure TPas2C64_Parser.ParseSetInterrupt;
+var
+  IntName: String;
+  Sym: TSymbol;
+begin
+  Expect(Token_lparen);
+  IntName := LowerCase(Token.TokenValue);
+  Expect(Token_ident);
+
+  Sym := FSymbolTable.GetSymbol(IntName);
+
+  if not Assigned(Sym) then Error('SetInterrupt: Undefined identifier "'+IntName+'"');
+
+  if Sym.SymbolClass <> cSymClass_Interrupt then Error('SetInterrupt: Identifier "'+IntName+'" not an interrupt routine');
+
+  Expect(Token_rparen);
+
+  FCodeGen.WriteCode('sei       // disable interrupts');
+  FCodeGen.WriteCode('');
+  FCodeGen.WriteCode('// set a custom interrupt routine address to interrupt vector');
+  FCodeGen.WriteCode('');
+  FCodeGen.WriteCode('lda #<int_'+IntName+'       // low byte of irqtest start addr');
+  FCodeGen.WriteCode('ldx #>int_'+IntName+'       // high byte of irqtest start addr');
+  FCodeGen.WriteCode('sta IRQVECLO');
+  FCodeGen.WriteCode('stx IRQVECHI');
+  FCodeGen.WriteCode('');
+  FCodeGen.WriteCode('cli                 // clear interrupt disable bit');
+end;
+
 procedure TPas2C64_Parser.ParseWriteLn;
 var
   v: TToken;
@@ -510,6 +571,9 @@ begin
   if      Accept(Token_writememb) then ParseWriteMemB
   else if Accept(Token_copymemb)  then ParseCopyMemB
   else if Accept(Token_writeln)   then ParseWriteLn
+  else if Accept(Token_incmemb)   then ParseIncMemB
+  else if Accept(Token_stdirq)    then ParseStdIRQ
+  else if Accept(Token_setint)    then ParseSetInterrupt
   else if Accept(Token_ident)     then ParseProcedureCallOrAssignment(TokenValue);
 end;
 
@@ -645,7 +709,7 @@ begin
         end;
       end;
       VarNames.Clear;
-    until Token.TokenType in[Token_const,Token_var,Token_begin];
+    until Token.TokenType in[Token_const,Token_var,Token_begin,Token_var,Token_proc];
   finally
     VarNames.Free;
   end;
@@ -654,15 +718,12 @@ end;
 procedure TPas2C64_Parser.ParseProcDecl;
 var
   ProcName: String;
+  IsInterrupt: Boolean;
 begin
-  Expect(Token_proc);
-
-  ProcName := Token.TokenValue;
+  ProcName := LowerCase(Token.TokenValue);
 
   if FSymbolTable.SymbolExists(ProcName) then
     Error('Procedure declaration: Identifer "'+ProcName+'" redeclared!');
-
-  FSymbolTable.AddSymbol(ProcName,'',cSymClass_Procedure,cSymSubClass_None);
 
   Expect(Token_ident);
 
@@ -670,45 +731,39 @@ begin
   begin
     Expect(Token_rparen);
   end;
-  Expect(Token_semicolon);
-
-  Expect(Token_begin);
-
-  FCodeGen.WriteLabel('proc_' + ProcName);
-
-  ParseBlock;
-
-  FCodeGen.WriteCode('rts');
-
-  Expect(Token_end);
-end;
-
-procedure TPas2C64_Parser.ParseInterruptDecl;
-var
-  InterruptName: String;
-begin
-  Expect(Token_interrupt);
-
-  InterruptName := Token.TokenValue;
-
-  if FSymbolTable.SymbolExists(InterruptName) then
-    Error('Interrupt declaration: Identifer "'+InterruptName+'" redeclared!');
-
-  FSymbolTable.AddSymbol(InterruptName,'',cSymClass_Interrupt,cSymSubClass_None);
-
-  Expect(Token_ident);
 
   Expect(Token_semicolon);
 
+  IsInterrupt := False;
+  if Accept(Token_interrupt) then
+  // is interrupt routine
+  begin
+    FSymbolTable.AddSymbol(ProcName,'',cSymClass_Interrupt,cSymSubClass_None);
+    IsInterrupt := True;
+  end
+  else
+  // is regular procedure
+    FSymbolTable.AddSymbol(ProcName,'',cSymClass_Procedure,cSymSubClass_None);
+
+  if IsInterrupt then
+    Expect(Token_semicolon);
+
   Expect(Token_begin);
 
-  FCodeGen.WriteLabel('int_' + InterruptName);
+  if IsInterrupt then
+    FCodeGen.WriteLabel('int_' + ProcName)
+  else
+    FCodeGen.WriteLabel('proc_' + ProcName);
 
   ParseBlock;
 
-  FCodeGen.WriteCode('rti');
+  if IsInterrupt then
+    FCodeGen.WriteCode('rti')
+  else
+    FCodeGen.WriteCode('rts');
 
   Expect(Token_end);
+  Expect(Token_semicolon);
 end;
 
 procedure TPas2C64_Parser.ParseInput;
@@ -733,12 +788,11 @@ begin
   else
     FCodeGen.WriteProgramStart(FCodeAddr);
 
-  while Token.TokenType in [Token_const,Token_var,Token_proc,Token_interrupt] do
+  while Token.TokenType in [Token_const,Token_var,Token_proc] do
   begin
     if      Accept(Token_const)     then ParseConstDecls
     else if Accept(Token_var)       then ParseVarDecls
-    else if Accept(Token_proc)      then ParseProcDecl
-    else if accept(Token_interrupt) then ParseInterruptDecl;
+    else if Accept(Token_proc)      then ParseProcDecl;
   end;
 
   Expect(Token_begin);

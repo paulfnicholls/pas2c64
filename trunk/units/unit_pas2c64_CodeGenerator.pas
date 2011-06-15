@@ -567,6 +567,7 @@ begin
   WriteCode(':BasicUpstart2(main) // 10 sys <start address>');
   WriteCode('');
   WriteCode('.import source "rtl\Macros_RTL.asm"');
+  WriteCode('.import source "rtl\Consts_RTL.asm"');
   WriteCode('');
 {  WriteCode('.pc = $0800 // start at BASIC');
   WriteCode('');
@@ -583,6 +584,7 @@ procedure TCodeGenerator_C64.WriteProgramStart(const aCodeAddr: Word);
 begin
   WriteOrigin(aCodeAddr);
   WriteCode('.import source "rtl\Macros_RTL.asm"');
+  WriteCode('.import source "rtl\Consts_RTL.asm"');
   WriteCode('');
   WriteCode('jmp main');
 end;
