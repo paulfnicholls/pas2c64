@@ -289,8 +289,6 @@ begin
     aC64Float.Mantissa[1] := 0;
     aC64Float.Mantissa[2] := 0;
     aC64Float.Mantissa[3] := 0;
-
-    C64FloatToStr(aC64Float);
     Exit;
   end;
 
@@ -355,8 +353,6 @@ begin
     aC64Float.Mantissa[2] := 0;
     aC64Float.Mantissa[3] := 0;
     aC64Float.Sign        := 0;
-
-    C64FloatToStr(aC64Float);
     Exit;
   end;
 
