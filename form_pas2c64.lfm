@@ -647,10 +647,14 @@ object FormMainForm: TFormMainForm
         '  c = 5;'
         'var'
         '  a: Integer;'
-        '  b: Byte;'
         '  f: Single;'
+        ''
+        'procedure Test;'
         'begin'
-        '  WriteLn(%1010-100);'
+        'end;'
+        ''
+        'begin'
+        '  ;'
         'end.'
       )
       BracketHighlightStyle = sbhsBoth
@@ -806,9 +810,9 @@ object FormMainForm: TFormMainForm
     end
     object CheckBox_UseBasicLoader: TCheckBox
       Left = 282
-      Height = 19
+      Height = 17
       Top = 4
-      Width = 121
+      Width = 119
       Caption = 'Use BASIC loader'
       Checked = True
       Font.Color = clWindowText

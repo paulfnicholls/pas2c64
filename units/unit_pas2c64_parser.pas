@@ -30,9 +30,9 @@ type
     FExpression  : TExpressionNodeList;
 
     procedure GetConstInfo(const aToken: TToken;
-                           var   aSymClass,aSymSubClass: Integer;
-                           var   aConstNum: Int64;
-                           var   aConstType: TIntNumType);
+                           out   aSymClass,aSymSubClass: Integer;
+                           out   aConstNum: Int64;
+                           out   aConstType: TIntNumType);
 
     function  ParseFactor: TExpressionNodeList;
     function  ParseSignedFactor: TExpressionNodeList;
@@ -54,6 +54,10 @@ type
     procedure ParseWriteMemB;
     procedure ParseCopyMemB;
     procedure ParseWriteLn;
+
+    procedure ParseProcedureCall(const aSym: TSymbol);
+    procedure ParseAssignment(const aSym: TSymbol);
+    procedure ParseProcedureCallOrAssignment(const aIdentifier: String);
     //
 
     procedure ParseStatement;
@@ -62,6 +66,8 @@ type
     procedure ParseConstDecls;
     procedure ParseVarDecls;
 
+    procedure ParseProcDecl;
+    procedure ParseInterruptDecl;
   protected
     procedure RegisterGenericTokens; override;
     procedure RegisterKeywordTokens; override;
@@ -139,9 +145,9 @@ begin
 end;
 
 procedure TPas2C64_Parser.GetConstInfo(const aToken: TToken;
-                                       var   aSymClass,aSymSubClass: Integer;
-                                       var   aConstNum: Int64;
-                                       var   aConstType: TIntNumType);
+                                       out   aSymClass,aSymSubClass: Integer;
+                                       out   aConstNum: Int64;
+                                       out   aConstType: TIntNumType);
 begin
   aSymClass    := cSymClass_Constant;
   aSymSubClass := cSymSubClass_None;
@@ -463,11 +469,48 @@ begin
   Expect(Token_semicolon);
 end;
 
-procedure TPas2C64_Parser.ParseStatement;
+procedure TPas2C64_Parser.ParseProcedureCall(const aSym: TSymbol);
 begin
+  if aSym.SymbolClass <> cSymClass_Procedure then Error('Illegal procedure call: Identifier "'+aSym.SymbolName+'" is not a procedure');
+
+  FCodeGen.WriteCode('jsr proc_' + aSym.SymbolName);
+end;
+
+procedure TPas2C64_Parser.ParseAssignment(const aSym: TSymbol);
+var
+  e: TExpressionNodeList;
+begin
+  if aSym.SymbolClass <> cSymClass_Variable then Error('Illegal assignment statement: Identifier "'+aSym.SymbolName+'" is not a variable');
+
+  Accept(Token_becomes);
+
+  e := ParseExpression(True);
+end;
+
+procedure TPas2C64_Parser.ParseProcedureCallOrAssignment(const aIdentifier: String);
+var
+  Sym: TSymbol;
+begin
+  Sym := FSymbolTable.GetSymbol(aIdentifier);
+
+  if not Assigned(Sym) then Error('Undeclared identifier: "'+aIdentifier+'"');
+
+  if Token.TokenType = Token_becomes then
+    ParseAssignment(Sym)
+  else
+    ParseProcedureCall(Sym);
+end;
+
+procedure TPas2C64_Parser.ParseStatement;
+var
+  TokenValue: String;
+begin
+  TokenValue := Token.TokenValue;
+
   if      Accept(Token_writememb) then ParseWriteMemB
   else if Accept(Token_copymemb)  then ParseCopyMemB
   else if Accept(Token_writeln)   then ParseWriteLn
+  else if Accept(Token_ident)     then ParseProcedureCallOrAssignment(TokenValue);
 end;
 
 procedure TPas2C64_Parser.ParseBlock;
@@ -488,7 +531,6 @@ var
   ConstType: TIntNumType;
   IsSingle: Boolean;
   f: TC64MemFloat;
-  Symbol: TSymbol;
   SymClass,SymSubClass: Integer;
 begin
   repeat
@@ -609,11 +651,72 @@ begin
   end;
 end;
 
+procedure TPas2C64_Parser.ParseProcDecl;
+var
+  ProcName: String;
+begin
+  Expect(Token_proc);
+
+  ProcName := Token.TokenValue;
+
+  if FSymbolTable.SymbolExists(ProcName) then
+    Error('Procedure declaration: Identifer "'+ProcName+'" redeclared!');
+
+  FSymbolTable.AddSymbol(ProcName,'',cSymClass_Procedure,cSymSubClass_None);
+
+  Expect(Token_ident);
+
+  if Accept(Token_lparen) then
+  begin
+    Expect(Token_rparen);
+  end;
+  Expect(Token_semicolon);
+
+  Expect(Token_begin);
+
+  FCodeGen.WriteLabel('proc_' + ProcName);
+
+  ParseBlock;
+
+  FCodeGen.WriteCode('rts');
+
+  Expect(Token_end);
+end;
+
+procedure TPas2C64_Parser.ParseInterruptDecl;
+var
+  InterruptName: String;
+begin
+  Expect(Token_interrupt);
+
+  InterruptName := Token.TokenValue;
+
+  if FSymbolTable.SymbolExists(InterruptName) then
+    Error('Interrupt declaration: Identifer "'+InterruptName+'" redeclared!');
+
+  FSymbolTable.AddSymbol(InterruptName,'',cSymClass_Interrupt,cSymSubClass_None);
+
+  Expect(Token_ident);
+
+  Expect(Token_semicolon);
+
+  Expect(Token_begin);
+
+  FCodeGen.WriteLabel('int_' + InterruptName);
+
+  ParseBlock;
+
+  FCodeGen.WriteCode('rti');
+
+  Expect(Token_end);
+end;
+
 procedure TPas2C64_Parser.ParseInput;
 var
   ProgName: AnsiString;
 begin
   FCodeGen.ResetLabels;
+  FSymbolTable.Clear;
 
   DstStream.Seek(0,soFromBeginning);
   FCodeGen.SetOutputStream(DstStream);
@@ -630,13 +733,12 @@ begin
   else
     FCodeGen.WriteProgramStart(FCodeAddr);
 
-  while Token.TokenType in[Token_var,Token_const] do
+  while Token.TokenType in [Token_const,Token_var,Token_proc,Token_interrupt] do
   begin
-    if Accept(Token_const) then
-      ParseConstDecls
-    else
-    if Accept(Token_var) then
-      ParseVarDecls;
+    if      Accept(Token_const)     then ParseConstDecls
+    else if Accept(Token_var)       then ParseVarDecls
+    else if Accept(Token_proc)      then ParseProcDecl
+    else if accept(Token_interrupt) then ParseInterruptDecl;
   end;
 
   Expect(Token_begin);
