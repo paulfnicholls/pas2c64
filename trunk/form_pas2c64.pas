@@ -5,7 +5,7 @@ unit form_pas2c64;
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, SynEdit, SynEditHighlighter, SynHighlighterPas, StdCtrls, ExtCtrls,
   unit_pas2c64_CodeGenerator,
   unit_pas2c64_parser;
