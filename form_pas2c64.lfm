@@ -644,7 +644,7 @@ object FormMainForm: TFormMainForm
       Lines.Strings = (
         'program Test;'
         'const'
-        '  a = 5;'
+        '  a = -5+10;'
         ''
         'procedure irqtest; interrupt;'
         'begin'
@@ -814,9 +814,9 @@ object FormMainForm: TFormMainForm
     end
     object CheckBox_UseBasicLoader: TCheckBox
       Left = 282
-      Height = 17
+      Height = 19
       Top = 4
-      Width = 119
+      Width = 121
       Caption = 'Use BASIC loader'
       Checked = True
       Font.Color = clWindowText

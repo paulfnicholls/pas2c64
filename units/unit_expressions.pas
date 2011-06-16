@@ -203,6 +203,9 @@ end;
 
 function  TExpressionNodeList.GetNode(const aIndex: Integer): TExpressionNode;
 begin
+  Result := nil;
+
+  if (aIndex < 0) or (aIndex >= FNodeList.Count) then Exit;
   Result := TExpressionNode(FNodeList.Items[aIndex]);
 end;
 
@@ -272,6 +275,8 @@ var
   i: Integer;
   Node: TExpressionNode;
 begin
+  WriteLn('Expression');
+  WriteLn('----------');
   for i := 0 to FNodeList.Count - 1 do
   begin
     Node := TExpressionNode(FNodeList.Items[i]);

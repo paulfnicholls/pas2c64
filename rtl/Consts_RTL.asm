@@ -48,3 +48,6 @@
 .const IRQVECLO  = $0314 // hardware interrupt (IRQ) vector, low byte
 .const IRQVECHI  = $0315 // hardware interrupt (IRQ) vector, high byte
 .const STDIRQ    = $ea31 //start address of standard interrupt routines
+
+// VIC-II registers
+.const BDRCOLOUR = $d020 // colour of border colour
