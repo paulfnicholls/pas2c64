@@ -26,17 +26,28 @@ var
   Token_stdirq    : Integer;
 
 type
+  TExpressionMode = (
+    emAllIdents,
+    emConstIdentsOnly
+  );
+
   TPas2C64_Parser = class(TBaseParser)
   private
-    FCodeAddr    : Word;
-    FSymbolTable : TPas2C64_SymbolTable;
-    FCodeGen     : TCodeGenerator_C64;
-    FExpression  : TExpressionNodeList;
+    FCodeAddr       : Word;
+    FExpressionMode : TExpressionMode;
+    FSymbolTable    : TPas2C64_SymbolTable;
+    FCodeGen        : TCodeGenerator_C64;
+    FExpression     : TExpressionNodeList;
 
+    function  IsIdent(const aStr: String): Boolean;
     procedure GetConstInfo(const aToken: TToken;
                            out   aSymClass,aSymSubClass: Integer;
                            out   aConstNum: Int64;
                            out   aConstType: TIntNumType);
+
+    procedure SetExpressionMode(const aMode: TExpressionMode);
+    function  GetTokenTypeFromSymbol(const aSym: TSymbol): Integer;
+    function  ResolveIdentifier(const aIdent: TToken): TToken;
 
     function  ParseFactor: TExpressionNodeList;
     function  ParseSignedFactor: TExpressionNodeList;
@@ -52,7 +63,8 @@ type
     function  ParseAdd: TExpressionNodeList;
     function  ParseSubtract: TExpressionNodeList;
     function  ParseOr: TExpressionNodeList;
-    function  ParseExpression(const aNewExpression: Boolean): TExpressionNodeList;
+    function  ParseExpression(const aNewExpression: Boolean;
+                              const aMode: TExpressionMode = emAllIdents): TExpressionNodeList;
 
     // statements types
     procedure ParseWriteMemB;
@@ -119,10 +131,11 @@ constructor TPas2C64_Parser.Create;
 begin
   inherited Create;
 
-  FCodeGen     := TCodeGenerator_C64.Create;
-  FCodeAddr    := $0000;
-  FSymbolTable := TPas2C64_SymbolTable.Create;
-  FExpression  := TExpressionNodeList.Create;
+  FCodeGen        := TCodeGenerator_C64.Create;
+  FCodeAddr       := $0000;
+  FSymbolTable    := TPas2C64_SymbolTable.Create;
+  FExpression     := TExpressionNodeList.Create;
+  FExpressionMode := emAllIdents;
 end;
 
 destructor  TPas2C64_Parser.Destroy;
@@ -154,6 +167,15 @@ begin
   Token_stdirq    := RegisterKeywordToken('StdIRQ');
 end;
 
+function  TPas2C64_Parser.IsIdent(const aStr: String): Boolean;
+begin
+  Result := False;
+
+  if aStr ='' then Exit;
+  if (aStr[1] = '_') or IsAlpha(aStr[1]) then
+    Result := True;
+end;
+
 procedure TPas2C64_Parser.GetConstInfo(const aToken: TToken;
                                        out   aSymClass,aSymSubClass: Integer;
                                        out   aConstNum: Int64;
@@ -183,19 +205,68 @@ begin
   end;
 end;
 
+procedure TPas2C64_Parser.SetExpressionMode(const aMode: TExpressionMode);
+begin
+  FExpressionMode := aMode;
+end;
+
+function  TPas2C64_Parser.GetTokenTypeFromSymbol(const aSym: TSymbol): Integer;
+begin
+  case aSym.SymbolSubClass of
+    cSymSubClass_SInt8  : Result := Token_intnumber;
+    cSymSubClass_SInt16 : Result := Token_intnumber;
+    cSymSubClass_SInt32 : Result := Token_intnumber;
+    cSymSubClass_UInt8  : Result := Token_intnumber;
+    cSymSubClass_UInt16 : Result := Token_intnumber;
+    cSymSubClass_UInt32 : Result := Token_intnumber;
+    cSymSubClass_Float  : Result := Token_fracnumber;
+    cSymSubClass_String : Result := Token_string;
+  else
+    Result := Token_unknown;
+  end;
+end;
+
+function  TPas2C64_Parser.ResolveIdentifier(const aIdent: TToken): TToken;
+var
+  Sym: TSymbol;
+begin
+  Result := aIdent;
+
+  Sym := FSymbolTable.GetSymbol(aIdent.TokenValue);
+
+  if not Assigned(Sym) then
+    Error('Illegal expression: Undeclared identifier "'+aIdent.TokenValue+'"');
+
+  if Sym.SymbolClass in [cSymClass_Procedure,cSymClass_Interrupt] then
+    Error('Illegal expression: Identifier "'+Sym.SymbolName+'" is a procedure/interrupt routine');
+
+  if Sym.SymbolClass <> cSymClass_Constant then Exit;
+
+  Result.TokenValue := Sym.SymbolValue;
+  Result.TokenType  := GetTokenTypeFromSymbol(Sym);
+
+  if IsIdent(Result.TokenValue) then
+    Result := ResolveIdentifier(Result);
+end;
+
 function  TPas2C64_Parser.ParseFactor: TExpressionNodeList;
 var
   v: TToken;
+  Sym: TSymbol;
 begin
   if Accept(Token_lparen) then
   // factor is an expression, so parse expression
   begin
-    Result := ParseExpression(False);
+    Result := ParseExpression(False,FExpressionMode);
     Expect(Token_rparen);
   end
   else
   begin
     v := GetToken;
+
+    if v.TokenType = Token_ident then
+      v := ResolveIdentifier(v);
+
     Result := FExpression.AddOperand(v.TokenValue,v.TokenType);
   end;
 end;
@@ -305,22 +376,20 @@ begin
   Result := FExpression.AddOperator(eoOr);
 end;
 
-function  TPas2C64_Parser.ParseExpression(const aNewExpression: Boolean): TExpressionNodeList;
+function  TPas2C64_Parser.ParseExpression(const aNewExpression: Boolean;
+                                          const aMode: TExpressionMode = emAllIdents): TExpressionNodeList;
 begin
-  try
-    if aNewExpression then FExpression.Clear;
+  if aNewExpression then FExpression.Clear;
 
-    Result := ParseTerm;
+  SetExpressionMode(aMode);
 
-    while Token.TokenType in [Token_plus,Token_minus,Token_or] do
-    begin
-      if      Accept(Token_plus)  then Result := ParseAdd
-      else if Accept(Token_minus) then Result := ParseSubtract
-      else if Accept(Token_or)    then Result := ParseOr;
-    end;
-  except
-    on E:Exception do
-      Error(E.Message);
+  Result := ParseTerm;
+
+  while Token.TokenType in [Token_plus,Token_minus,Token_or] do
+  begin
+    if      Accept(Token_plus)  then Result := ParseAdd
+    else if Accept(Token_minus) then Result := ParseSubtract
+    else if Accept(Token_or)    then Result := ParseOr;
   end;
 end;
 
@@ -420,16 +489,17 @@ begin
 
   Expect(Token_rparen);
 
-  FCodeGen.WriteCode('sei       // disable interrupts');
+  FCodeGen.WriteCode('sei // disable interrupts');
   FCodeGen.WriteCode('');
-  FCodeGen.WriteCode('// set a custom interrupt routine address to interrupt vector');
+  FCodeGen.WriteCode('// set a custom interrupt routine address');
+  FCodeGen.WriteCode('// to interrupt vector');
   FCodeGen.WriteCode('');
-  FCodeGen.WriteCode('lda #<int_'+IntName+'       // low byte of irqtest start addr');
-  FCodeGen.WriteCode('ldx #>int_'+IntName+'       // high byte of irqtest start addr');
+  FCodeGen.WriteCode('lda #<int_'+IntName+'       // low byte of int_'+IntName+' start addr');
+  FCodeGen.WriteCode('ldx #>int_'+IntName+'       // high byte of int_'+IntName+' start addr');
   FCodeGen.WriteCode('sta IRQVECLO');
   FCodeGen.WriteCode('stx IRQVECHI');
   FCodeGen.WriteCode('');
-  FCodeGen.WriteCode('cli                 // clear interrupt disable bit');
+  FCodeGen.WriteCode('cli // clear interrupt disable bit');
 end;
 
 procedure TPas2C64_Parser.ParseWriteLn;
@@ -596,6 +666,8 @@ var
   IsSingle: Boolean;
   f: TC64MemFloat;
   SymClass,SymSubClass: Integer;
+  e: TExpressionNodeList;
+  Value: TExpressionOperandNode;
 begin
   repeat
     ConstName := Token.TokenValue;
@@ -607,7 +679,13 @@ begin
 
     Expect(Token_eql);
 
-    ConstValue := GetToken;
+    e := ParseExpression(True,emConstIdentsOnly);
+
+    // TODO: don't just get first expression node, evaluate it!
+    Value := TExpressionOperandNode(e.GetNode(0));
+
+    ConstValue.TokenValue := Value.OperandValue;
+    ConstValue.TokenType  := Value.OperandType;
 
     IsSingle := ConstValue.TokenType = Token_fracnumber;
 
@@ -639,7 +717,7 @@ begin
     end
     else
       Error('Constant declaration: Illegal token "'+ConstName+'"!');
-  until Token.TokenType in[Token_const,Token_var,Token_begin];
+  until Token.TokenType in[Token_const,Token_var,Token_begin,Token_proc];
 end;
 
 procedure TPas2C64_Parser.ParseVarDecls;
@@ -654,6 +732,8 @@ begin
   VarNames := TStringList.Create;
   try
     repeat
+      VarNames.Clear;
+
       if FSymbolTable.SymbolExists(Token.TokenValue) then
         Error('Var declaration: Identifer "'+Token.TokenValue+'" redeclared!');
 
@@ -684,6 +764,7 @@ begin
       Expect(Token_ident);
       Expect(Token_semicolon);
 
+      // output variables in asm
       for i := 0 to VarNames.Count - 1 do
       begin
         if IsString then
@@ -708,7 +789,6 @@ begin
           FSymbolTable.AddSymbol(VarNames.Strings[i],'',cSymClass_Variable,cSymSubClass_SInt16);
         end;
       end;
-      VarNames.Clear;
     until Token.TokenType in[Token_const,Token_var,Token_begin,Token_var,Token_proc];
   finally
     VarNames.Free;

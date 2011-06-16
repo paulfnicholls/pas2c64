@@ -15,12 +15,12 @@ type
   { TFormMainForm }
 
   TFormMainForm = class(TForm)
-    GroupBox1: TGroupBox;
+    GroupBox_SourceCode: TGroupBox;
     Panel1: TPanel;
     Button_Compile: TButton;
     Button_CompileAndRun: TButton;
     Splitter: TSplitter;
-    GroupBox2: TGroupBox;
+    GroupBox_AssemblyOutput: TGroupBox;
     CheckBox_UseBasicLoader: TCheckBox;
     Edit_CodeAddr: TEdit;
     Label_CodeAddr: TLabel;
@@ -58,16 +58,16 @@ var
 begin
   reg := TRegistry.Create;
   try
-   reg.RootKey:=HKEY_CLASSES_ROOT;
-   reg.OpenKey('.' + ExtName, True) ;
-   reg.WriteString('', ExtName + 'file') ;
+   reg.RootKey := HKEY_CLASSES_ROOT;
+   reg.OpenKey('.' + ExtName, True);
+   reg.WriteString('', ExtName + 'file');
    reg.CloseKey;
-   reg.CreateKey(ExtName + 'file') ;
-   reg.OpenKey(ExtName + 'file\DefaultIcon', True) ;
-   reg.WriteString('', AppName + ',0') ;
+   reg.CreateKey(ExtName + 'file');
+   reg.OpenKey(ExtName + 'file\DefaultIcon', True);
+   reg.WriteString('', AppName + ',0');
    reg.CloseKey;
-   reg.OpenKey(ExtName + 'file\shell\open\command', True) ;
-   reg.WriteString('',AppName+' "%1"') ;
+   reg.OpenKey(ExtName + 'file\shell\open\command', True);
+   reg.WriteString('',AppName+' "%1"');
    reg.CloseKey;
   finally
    reg.Free;
