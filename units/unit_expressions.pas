@@ -36,7 +36,15 @@ const
   );
 
 type
-  TExpressionNodeList = class;
+  TExpressionNodeList    = class;
+  TExpressionOperandNode = class;
+
+  // returns false if operation wasn't simplified.
+  // Otherwise, aResultValue, aResultType contains the simplified result.
+  TOnAddExpressionOperation = function(const a,b: TExpressionOperandNode;
+                                       const Op: TExpressionOperator;
+                                       out   aResultValue: String;
+                                       out   aResultType: Integer): Boolean of object;
 
   { TExpressionNode }
   TExpressionNode = class
@@ -46,6 +54,8 @@ type
     constructor Create(const aParent: TExpressionNodeList);
 
     function  GetRelativeNode(const aOffset: Integer): TExpressionNode;
+    function  GetNodeIndex: Integer;
+
     property Parent: TExpressionNodeList read FParent;
   end;
 
@@ -72,12 +82,16 @@ type
     destructor  Destroy; override;
 
     function  AddOperand(const aValue: String; const aType: Integer): TExpressionNodeList;
-    function  AddOperator(const aOp: TExpressionOperator): TExpressionNodeList;
+    function  InsertOperand(const aValue: String; const aType: Integer; const aIndex: Integer): TExpressionNodeList;
+    function  AddOperator(const aOp: TExpressionOperator;
+                          const aOnAddExpressionOperation: TOnAddExpressionOperation): TExpressionNodeList;
     procedure Clear;
     function  GetNodeCount: Integer;
     function  GetNode(const aIndex: Integer): TExpressionNode;
     function  GetRelativeNode(const aNode: TExpressionNode; const aOffset: Integer): TExpressionNode;
+    function  GetNodeIndex(const aNode: TExpressionNode): Integer;
     procedure DeleteNode(const aNode: TExpressionNode);
+    function  Simplify(out aErrorMsg: String): TExpressionNodeList;
 
     procedure WriteExpression;
   end;
@@ -92,6 +106,11 @@ end;
 function  TExpressionNode.GetRelativeNode(const aOffset: Integer): TExpressionNode;
 begin
   Result := FParent.GetRelativeNode(Self,aOffset);
+end;
+
+function  TExpressionNode.GetNodeIndex: Integer;
+begin
+  Result := FParent.GetNodeIndex(Self);
 end;
 
 constructor TExpressionOperandNode.Create(const aParent: TExpressionNodeList; const aValue: String; const aType: Integer);
@@ -131,14 +150,40 @@ begin
   Result := Self;
 end;
 
-function  TExpressionNodeList.AddOperator(const aOp: TExpressionOperator): TExpressionNodeList;
+function  TExpressionNodeList.InsertOperand(const aValue: String; const aType: Integer; const aIndex: Integer): TExpressionNodeList;
 var
   Node: TExpressionNode;
 begin
-  Node := TExpressionOperatorNode.Create(Self,aOp);
-  FNodeList.Add(Node);
+  Node := TExpressionOperandNode.Create(Self,aValue,aType);
+  FNodeList.Insert(aIndex,Node);
+
+  Result := Self;
+end;
+
+function  TExpressionNodeList.AddOperator(const aOp: TExpressionOperator;
+                                          const aOnAddExpressionOperation: TOnAddExpressionOperation): TExpressionNodeList;
+var
+  Node: TExpressionNode;
+  a,b: TExpressionOperandNode;
+  // result info for simplified operation
+  ResValue: String;
+  ResType: Integer;
+begin
+  // get operands for this operation
+  a := TExpressionOperandNode(GetNode(FNodeList.Count - 2));
+  b := TExpressionOperandNode(GetNode(FNodeList.Count - 1));
+
+  if aOnAddExpressionOperation(a,b,aOp,ResValue,ResType) then
+  // was simplified so add resulting operand instead of operator
+    Result := AddOperand(ResValue,ResType)
+  else
+  begin
+  // wasn't simplified so add operator
+    Node := TExpressionOperatorNode.Create(Self,aOp);
+    FNodeList.Add(Node);
 
     Result := Self;
+  end;
 end;
 
 procedure TExpressionNodeList.Clear;
@@ -189,6 +234,37 @@ begin
   if Index = -1 then Exit;
   FNodeList.Delete(Index);
   aNode.Free;
+end;
+
+function  TExpressionNodeList.GetNodeIndex(const aNode: TExpressionNode): Integer;
+begin
+  Result := FNodeList.IndexOf(aNode)
+end;
+
+function  TExpressionNodeList.Simplify(out aErrorMsg: String): TExpressionNodeList;
+var
+  i: Integer;
+  Node: TExpressionNode;
+  a,b: TExpressionOperandNode;
+  op: TExpressionOperatorNode;
+begin
+  Result   := Self;
+  aErrorMsg := '';
+
+  i := 0;
+  while (i >= 0) and (i < FNodeList.Count) do
+  begin
+    Node := TExpressionNode(FNodeList.Items[i]);
+
+    if Node is TExpressionOperatorNode then
+    begin
+      // r := a op b
+      op := TExpressionOperatorNode(Node);
+      a  := TExpressionOperandNode(op.GetRelativeNode(-2));
+      b  := TExpressionOperandNode(op.GetRelativeNode(-1));
+    end;
+    Inc(i);
+  end;
 end;
 
 procedure TExpressionNodeList.WriteExpression;

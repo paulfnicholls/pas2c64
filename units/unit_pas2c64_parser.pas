@@ -49,6 +49,22 @@ type
     function  GetTokenTypeFromSymbol(const aSym: TSymbol): Integer;
     function  ResolveIdentifier(const aIdent: TToken): TToken;
 
+    function  Simplify_Neg(const a: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_Not(const a: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_Mul(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_Div(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_Sub(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_Add(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_IntDiv(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_IntMod(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_And(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+    function  Simplify_Or(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+
+    function  OnAddExpressionOperation(const a,b: TExpressionOperandNode;
+                                       const Op: TExpressionOperator;
+                                       out   aResultValue: String;
+                                       out   aResultType: Integer): Boolean;
+
     function  ParseFactor: TExpressionNodeList;
     function  ParseSignedFactor: TExpressionNodeList;
 
@@ -165,6 +181,130 @@ begin
   Token_incmemb   := RegisterKeywordToken('IncMemB');
   Token_setint    := RegisterKeywordToken('SetInterrupt');
   Token_stdirq    := RegisterKeywordToken('StdIRQ');
+end;
+
+function  TPas2C64_Parser.Simplify_Neg(const a: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+var
+  SymClass,SymSubClass: Integer;
+  ConstNum: Int64;
+  ConstType: TIntNumType;
+begin
+  Result := True;
+
+  aResultValue := '';
+  aResultType  := a.OperandType;
+
+  if not (a.OperandType in [Token_ident,Token_intnumber,Token_fracnumber]) then
+    Error('Expression error: Invalid type "'+TokenToStr(a.OperandType)+'" in negate operation');
+
+  if a.OperandType = Token_ident then
+  begin
+    if a.OperandValue[1] = '-' then
+    // make positive; remove -ve sign
+      aResultValue := Copy(a.OperandValue,2,Length(a.OperandValue))
+    else
+    // make negative; add -ve sign
+      aResultValue := '-' + a.OperandValue;
+  end
+  else
+  if a.OperandType = Token_fracnumber then
+  begin
+    aResultValue := FloatToStr(-1 * StrToFloat(a.OperandValue));
+  end
+  else
+  if a.OperandType = Token_intnumber then
+  begin
+    GetConstInfo(NewToken(a.OperandValue,a.OperandType),SymClass,SymSubClass,ConstNum,ConstType);
+
+    aResultValue := IntToStr(-1 * ConstNum);
+  end;
+end;
+
+function  TPas2C64_Parser.Simplify_Not(const a: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_Mul(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_Div(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_Sub(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_Add(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_IntDiv(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_IntMod(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_And(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.Simplify_Or(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+begin
+  Result := False;
+  aResultValue := '';
+  aResultType  := Token_unknown;
+end;
+
+function  TPas2C64_Parser.OnAddExpressionOperation(const a,b: TExpressionOperandNode;
+                                                   const Op: TExpressionOperator;
+                                                   out   aResultValue: String;
+                                                   out   aResultType: Integer): Boolean;
+// returns false if operation wasn't simplified.
+// Otherwise, aResultValue, aResultType contains the simplified result.
+// throws error if incompatible types in operation...
+begin
+  case Op of
+    eoNeg    : Result := Simplify_Neg   (b,aResultValue,aResultType); // only uses 1 operand
+    eoNot    : Result := Simplify_Not   (b,aResultValue,aResultType); // only uses 1 operand
+    eoMul    : Result := Simplify_Mul   (a,b,aResultValue,aResultType);
+    eoDiv    : Result := Simplify_Div   (a,b,aResultValue,aResultType);
+    eoSub    : Result := Simplify_Sub   (a,b,aResultValue,aResultType);
+    eoAdd    : Result := Simplify_Add   (a,b,aResultValue,aResultType);
+    eoIntDiv : Result := Simplify_IntDiv(a,b,aResultValue,aResultType);
+    eoIntMod : Result := Simplify_IntMod(a,b,aResultValue,aResultType);
+    eoAnd    : Result := Simplify_And   (a,b,aResultValue,aResultType);
+    eoOr     : Result := Simplify_Or    (a,b,aResultValue,aResultType);
+  else
+    Result := False;
+  end;
 end;
 
 function  TPas2C64_Parser.IsIdent(const aStr: String): Boolean;
@@ -296,12 +436,12 @@ begin
     DeltaCount := FExpression.GetNodeCount - LastCount;
 
     if DeltaCount > 1 then
-      Result := FExpression.AddOperator(eoNeg)
+      Result := FExpression.AddOperator(eoNeg,OnAddExpressionOperation)
     else
     begin
       Operand := TExpressionOperandNode(FExpression.GetNode(FExpression.GetNodeCount - 1));
       if Operand.OperandType = Token_ident then
-        Result := FExpression.AddOperator(eoNeg)
+        Result := FExpression.AddOperator(eoNeg,OnAddExpressionOperation)
       else
         Operand.OperandValue := '-' + Operand.OperandValue;
     end;
@@ -311,37 +451,37 @@ end;
 function  TPas2C64_Parser.ParseNot: TExpressionNodeList;
 begin
   Result := ParseSignedFactor;
-  Result := FExpression.AddOperator(eoNot);
+  Result := FExpression.AddOperator(eoNot,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseMultiply: TExpressionNodeList;
 begin
   Result := ParseSignedFactor;
-  Result := FExpression.AddOperator(eoMul);
+  Result := FExpression.AddOperator(eoMul,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseDivide: TExpressionNodeList;
 begin
   Result := ParseSignedFactor;
-  Result := FExpression.AddOperator(eoDiv);
+  Result := FExpression.AddOperator(eoDiv,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseIntDiv: TExpressionNodeList;
 begin
   Result := ParseSignedFactor;
-  Result := FExpression.AddOperator(eoIntDiv);
+  Result := FExpression.AddOperator(eoIntDiv,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseIntMod: TExpressionNodeList;
 begin
   Result := ParseSignedFactor;
-  Result := FExpression.AddOperator(eoIntMod);
+  Result := FExpression.AddOperator(eoIntMod,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseAnd: TExpressionNodeList;
 begin
   Result := ParseSignedFactor;
-  Result := FExpression.AddOperator(eoAnd);
+  Result := FExpression.AddOperator(eoAnd,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseTerm: TExpressionNodeList;
@@ -361,19 +501,19 @@ end;
 function  TPas2C64_Parser.ParseAdd: TExpressionNodeList;
 begin
   Result := ParseTerm;
-  Result := FExpression.AddOperator(eoAdd);
+  Result := FExpression.AddOperator(eoAdd,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseSubtract: TExpressionNodeList;
 begin
   Result := ParseTerm;
-  Result := FExpression.AddOperator(eoSub);
+  Result := FExpression.AddOperator(eoSub,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseOr: TExpressionNodeList;
 begin
   Result := ParseTerm;
-  Result := FExpression.AddOperator(eoOr);
+  Result := FExpression.AddOperator(eoOr,OnAddExpressionOperation);
 end;
 
 function  TPas2C64_Parser.ParseExpression(const aNewExpression: Boolean;
@@ -679,7 +819,7 @@ begin
 
     Expect(Token_eql);
 
-    e := ParseExpression(True,emConstIdentsOnly);
+    e := ParseExpression(True);
 
     // TODO: don't just get first expression node, evaluate it!
     Value := TExpressionOperandNode(e.GetNode(0));
