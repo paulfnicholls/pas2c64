@@ -218,6 +218,8 @@ begin
 
     aResultValue := IntToStr(-1 * ConstNum);
   end;
+
+  FExpression.DeleteNode(a);
 end;
 
 function  TPas2C64_Parser.Simplify_Not(const a: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
@@ -228,6 +230,14 @@ begin
 end;
 
 function  TPas2C64_Parser.Simplify_Mul(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+var
+  ASymClass,ASymSubClass: Integer;
+  AConstNum: Int64;
+  AConstType: TIntNumType;
+
+  BSymClass,BSymSubClass: Integer;
+  BConstNum: Int64;
+  BConstType: TIntNumType;
 begin
   Result := False;
   aResultValue := '';
@@ -249,10 +259,64 @@ begin
 end;
 
 function  TPas2C64_Parser.Simplify_Add(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
+var
+  SymClass,SymSubClass: Integer;
+  ConstNum: Int64;
+  ConstType: TIntNumType;
 begin
   Result := False;
+
   aResultValue := '';
-  aResultType  := Token_unknown;
+  aResultType  := a.OperandType;
+
+  if (a.OperandType = Token_ident) or (b.OperandType = Token_ident) then Exit; // can't simplify
+
+  if (a.OperandType = Token_string) and (b.OperandType = Token_string) then
+  begin
+    aResultValue := a.OperandValue + b.OperandValue;
+    aResultType  := Token_string;
+    Result := True;
+  end
+  else
+  if (a.OperandType = Token_intnumber) and (b.OperandType = Token_intnumber) then
+  begin
+    aResultValue := IntToStr(StrToInt(a.OperandValue) + StrToInt(b.OperandValue));
+    aResultType  := Token_intnumber;  ffds
+    Result := True;
+  end
+  else
+  if (a.OperandType in [Token_intnumber,Token_fracnumber]) and (b.OperandType in [Token_intnumber,Token_fracnumber]) then
+  begin
+    aResultValue := a.OperandValue + b.OperandValue;
+    aResultType  := Token_fracnumber;
+    Result := True;
+  end
+  else
+    Error('Expression error: Incompatible type(s) "'+TokenToStr(a.OperandType)+'" and "'+TokenToStr(b.OperandType)+'" in add operation');
+
+  if a.OperandType = Token_ident then
+  begin
+    if a.OperandValue[1] = '-' then
+    // make positive; remove -ve sign
+      aResultValue := Copy(a.OperandValue,2,Length(a.OperandValue))
+    else
+    // make negative; add -ve sign
+      aResultValue := '-' + a.OperandValue;
+  end
+  else
+  if a.OperandType = Token_fracnumber then
+  begin
+    aResultValue := FloatToStr(-1 * StrToFloat(a.OperandValue));
+  end
+  else
+  if a.OperandType = Token_intnumber then
+  begin
+    GetConstInfo(NewToken(a.OperandValue,a.OperandType),SymClass,SymSubClass,ConstNum,ConstType);
+
+    aResultValue := IntToStr(-1 * ConstNum);
+  end;
+
+  FExpression.DeleteNode(a);
 end;
 
 function  TPas2C64_Parser.Simplify_IntDiv(const a,b: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
@@ -433,18 +497,19 @@ begin
 
   if NegativeFactor then
   begin
-    DeltaCount := FExpression.GetNodeCount - LastCount;
+    Result := FExpression.AddOperator(eoNeg,OnAddExpressionOperation);
+{    DeltaCount := FExpression.GetNodeCount - LastCount;
 
     if DeltaCount > 1 then
       Result := FExpression.AddOperator(eoNeg,OnAddExpressionOperation)
     else
     begin
       Operand := TExpressionOperandNode(FExpression.GetNode(FExpression.GetNodeCount - 1));
-      if Operand.OperandType = Token_ident then
+//      if Operand.OperandType = Token_ident then
         Result := FExpression.AddOperator(eoNeg,OnAddExpressionOperation)
-      else
-        Operand.OperandValue := '-' + Operand.OperandValue;
-    end;
+//      else
+//        Operand.OperandValue := '-' + Operand.OperandValue;
+    end;}
   end;
 end;
 
@@ -820,6 +885,7 @@ begin
     Expect(Token_eql);
 
     e := ParseExpression(True);
+    e.WriteExpression;
 
     // TODO: don't just get first expression node, evaluate it!
     Value := TExpressionOperandNode(e.GetNode(0));
