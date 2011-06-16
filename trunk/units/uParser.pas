@@ -20,6 +20,7 @@ var
   Token_intnumber    : Integer;
   Token_fracnumber   : Integer;
   Token_string       : Integer;
+  Token_boolean      : Integer;
   Token_colon        : Integer;
   Token_lparen       : Integer;
   Token_rparen       : Integer;
@@ -164,6 +165,7 @@ type
 
 { --- Routines -------------------------------------------------------------- }
 
+function  NewToken(const aTokenValue: String; const aTokenType: Integer): TToken;
 function  RegisterGenericToken(const aTokenName: String): Integer;
 function  RegisterKeywordToken(const aTokenName: String): Integer;
 procedure CheckTokenForKeyword(var aToken: TToken);
@@ -180,6 +182,12 @@ var
   CurrentTokenType: Integer;
   TokenList: TStringList;
   KeywordList: TStringList;
+
+function  NewToken(const aTokenValue: String; const aTokenType: Integer): TToken;
+begin
+  Result.TokenValue := aTokenValue;
+  Result.TokenType  := aTokenType;
+end;
 
 {$ifdef fpc}
 function  CharInSet(const c: Char; const aSet: TCharSet): Boolean;
@@ -311,10 +319,11 @@ begin
 
   Token_unknown      := RegisterGenericToken('Unknown');
   Token_eof          := RegisterGenericToken('EOF');
-  Token_ident        := RegisterGenericToken('Ident');
+  Token_ident        := RegisterGenericToken('Identifier');
   Token_intnumber    := RegisterGenericToken('Integer');
   Token_fracnumber   := RegisterGenericToken('Single');
   Token_string       := RegisterGenericToken('String');
+  Token_boolean      := RegisterGenericToken('Boolean');
 
   RegisterGenericTokens;
   RegisterKeywordTokens;
