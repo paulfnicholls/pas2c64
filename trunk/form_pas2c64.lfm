@@ -1,10 +1,10 @@
 object FormMainForm: TFormMainForm
-  Left = 353
-  Height = 575
-  Top = 121
+  Left = 315
+  Height = 667
+  Top = 208
   Width = 862
   Caption = 'Pas2C64 Compiler'
-  ClientHeight = 575
+  ClientHeight = 667
   ClientWidth = 862
   Color = clBtnFace
   Font.Color = clWindowText
@@ -20,27 +20,27 @@ object FormMainForm: TFormMainForm
     Cursor = crVSplit
     Left = 0
     Height = 10
-    Top = 281
+    Top = 320
     Width = 862
     Align = alTop
     ResizeAnchor = akTop
   end
-  object GroupBox1: TGroupBox
+  object GroupBox_SourceCode: TGroupBox
     Left = 0
-    Height = 281
+    Height = 320
     Top = 0
     Width = 862
     Align = alTop
     Caption = 'Source Code'
-    ClientHeight = 263
+    ClientHeight = 302
     ClientWidth = 858
     TabOrder = 0
     inline SynEdit_SourceCode: TSynEdit
       Left = 0
-      Height = 254
+      Height = 302
       Top = 0
       Width = 858
-      Align = alTop
+      Align = alClient
       Font.Height = -13
       Font.Name = 'Courier New'
       Font.Pitch = fpFixed
@@ -643,6 +643,8 @@ object FormMainForm: TFormMainForm
         end>
       Lines.Strings = (
         'program Test;'
+        'const'
+        '  a = 5;'
         ''
         'procedure irqtest; interrupt;'
         'begin'
@@ -650,8 +652,13 @@ object FormMainForm: TFormMainForm
         '  StdIRQ;'
         'end;'
         ''
+        'procedure Init;'
         'begin'
         '  SetInterrupt(irqtest);'
+        'end;'
+        ''
+        'begin'
+        '  Init;'
         'end.'
       )
       BracketHighlightStyle = sbhsBoth
@@ -766,17 +773,17 @@ object FormMainForm: TFormMainForm
   end
   object Panel1: TPanel
     Left = 0
-    Height = 57
-    Top = 518
+    Height = 41
+    Top = 626
     Width = 862
     Align = alBottom
-    ClientHeight = 57
+    ClientHeight = 41
     ClientWidth = 862
     TabOrder = 1
     object Label_CodeAddr: TLabel
-      Left = 298
+      Left = 416
       Height = 14
-      Top = 27
+      Top = 4
       Width = 80
       Caption = 'Code Address'
       Enabled = False
@@ -807,9 +814,9 @@ object FormMainForm: TFormMainForm
     end
     object CheckBox_UseBasicLoader: TCheckBox
       Left = 282
-      Height = 19
+      Height = 17
       Top = 4
-      Width = 121
+      Width = 119
       Caption = 'Use BASIC loader'
       Checked = True
       Font.Color = clWindowText
@@ -822,28 +829,28 @@ object FormMainForm: TFormMainForm
       TabOrder = 2
     end
     object Edit_CodeAddr: TEdit
-      Left = 383
+      Left = 501
       Height = 21
-      Top = 27
+      Top = 4
       Width = 121
       Enabled = False
       TabOrder = 3
       Text = '$c000'
     end
   end
-  object GroupBox2: TGroupBox
+  object GroupBox_AssemblyOutput: TGroupBox
     Left = 0
-    Height = 227
-    Top = 291
+    Height = 296
+    Top = 330
     Width = 862
     Align = alClient
     Caption = 'Assembly Output'
-    ClientHeight = 209
+    ClientHeight = 278
     ClientWidth = 858
     TabOrder = 2
     inline SynEdit_AssemblyOutput: TSynEdit
       Left = 0
-      Height = 209
+      Height = 278
       Top = 0
       Width = 858
       Align = alClient
@@ -1446,9 +1453,6 @@ object FormMainForm: TFormMainForm
           Option = 0
           Priority = 0
         end>
-      Lines.Strings = (
-        'SynEdit_AssemblyOutput'
-      )
       ReadOnly = True
       BracketHighlightStyle = sbhsBoth
       inline SynLeftGutterPartList1: TSynGutterPartList
