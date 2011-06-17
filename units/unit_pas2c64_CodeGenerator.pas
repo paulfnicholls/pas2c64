@@ -568,6 +568,7 @@ begin
   WriteCode('');
   WriteCode('.import source "rtl\Macros_RTL.asm"');
   WriteCode('.import source "rtl\Consts_RTL.asm"');
+  WriteCode('.import source "rtl\Routines_RTL.asm"');
   WriteCode('');
 {  WriteCode('.pc = $0800 // start at BASIC');
   WriteCode('');
@@ -585,6 +586,7 @@ begin
   WriteOrigin(aCodeAddr);
   WriteCode('.import source "rtl\Macros_RTL.asm"');
   WriteCode('.import source "rtl\Consts_RTL.asm"');
+  WriteCode('.import source "rtl\Routines_RTL.asm"');
   WriteCode('');
   WriteCode('jmp main');
 end;
