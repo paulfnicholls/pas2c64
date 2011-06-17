@@ -18,7 +18,10 @@ type
     eoIntDiv,
     eoIntMod,
     eoAnd,
-    eoOr
+    eoOr,
+    eoXor,
+    eoShl,
+    eoShr
   );
 
 const
@@ -32,7 +35,10 @@ const
     'div',
     'mod',
     'and',
-    'or'
+    'or',
+    'xor',
+    'shl',
+    'shr'
   );
 
 type

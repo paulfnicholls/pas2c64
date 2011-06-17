@@ -80,7 +80,8 @@ procedure TFormMainForm.Button_CompileAndRunClick(Sender: TObject);
 begin
   CompileCode;
 
-  ShellExecute(handle,'open','pas2c64_compileandruncode.bat',nil,nil,SW_SHOWNORMAL);
+  if FParser.ErrorMsg = '' then
+    ShellExecute(handle,'open','pas2c64_compileandruncode.bat',nil,nil,SW_SHOWNORMAL);
 end;
 
 procedure TFormMainForm.CheckBox_UseBasicLoaderClick(Sender: TObject);
@@ -147,19 +148,24 @@ begin
   begin
     CompileCode;
 
-    if not (ssCTRL in Shift) then
-    // compile and run
-      ShellExecute(handle,'open','pas2c64_compileandruncode.bat',nil,nil,SW_SHOWNORMAL)
-    else
-    // compile only
-      ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
+    if FParser.ErrorMsg = '' then
+    begin
+      if not (ssCTRL in Shift) then
+      // compile and run
+        ShellExecute(handle,'open','pas2c64_compileandruncode.bat',nil,nil,SW_SHOWNORMAL)
+      else
+      // compile only
+        ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
+    end;
   end;
 end;
 
 procedure TFormMainForm.Button_CompileClick(Sender: TObject);
 begin
   CompileCode;
-  ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
+
+  if FParser.ErrorMsg = '' then
+    ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
 end;
 
 procedure TFormMainForm.Button1Click(Sender: TObject);

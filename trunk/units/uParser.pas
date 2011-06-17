@@ -60,8 +60,11 @@ var
   Token_program      : Integer;
   Token_and          : Integer;
   Token_or           : Integer;
+  Token_xor          : Integer;
   Token_div          : Integer;
   Token_mod          : Integer;
+  Token_shl          : Integer;
+  Token_shr          : Integer;
 
 type
   { TIntNumType }
@@ -291,12 +294,21 @@ begin
   c := 0;
 
   if aNumber[1] = '%' then
-    v := BinToInt64(aNumber)
+  begin
+    v := BinToInt64(aNumber);
+    c := 0;
+  end
+  else
+  if aNumber[1] = '$' then
+  begin
+    v := StrToInt(aNumber);
+    c := 0;
+  end
   else
     Val(aNumber, v, c);
 
   if c <> 0 then
-    raise TParseException.Create('Invalid number');
+    raise TParseException.Create('Invalid number "'+aNumber+'"');
 
   for i := Low(TIntNumType) to High(TIntNumType) do
     if IntegerInRange(v, cNumTypeRange[i].MinVal,cNumTypeRange[i].MaxVal) then
@@ -764,8 +776,11 @@ begin
   Token_program      := RegisterKeywordToken('program');
   Token_and          := RegisterKeywordToken('and');
   Token_or           := RegisterKeywordToken('or');
+  Token_Xor          := RegisterKeywordToken('xor');
   Token_div          := RegisterKeywordToken('div');
   Token_mod          := RegisterKeywordToken('mod');
+  Token_shl          := RegisterKeywordToken('shl');
+  Token_shr          := RegisterKeywordToken('shr');
 end;
 
 procedure ClearAllTokens;

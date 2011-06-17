@@ -644,11 +644,11 @@ object FormMainForm: TFormMainForm
       Lines.Strings = (
         'program Test;'
         'const'
-        '  a = -5+10;'
+        '  BDRCOLOR = $d020;'
         ''
         'procedure irqtest; interrupt;'
         'begin'
-        '  IncMemB($d020);'
+        '  IncMemB(BDRCOLOR);'
         '  StdIRQ;'
         'end;'
         ''
@@ -659,6 +659,9 @@ object FormMainForm: TFormMainForm
         ''
         'begin'
         '  Init;'
+        '  WriteLn(''press any key...'');'
+        '  WaitForKey;'
+        '  WriteLn(''key pressed!!'');'
         'end.'
       )
       BracketHighlightStyle = sbhsBoth
@@ -814,9 +817,9 @@ object FormMainForm: TFormMainForm
     end
     object CheckBox_UseBasicLoader: TCheckBox
       Left = 282
-      Height = 19
+      Height = 17
       Top = 4
-      Width = 121
+      Width = 119
       Caption = 'Use BASIC loader'
       Checked = True
       Font.Color = clWindowText
