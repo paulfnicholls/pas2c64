@@ -5,10 +5,7 @@ unit form_pas2c64;
 interface
 
 uses
-  Windows, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, SynEdit, SynEditHighlighter, SynHighlighterPas, StdCtrls, ExtCtrls,
-  unit_pas2c64_CodeGenerator,
-  unit_pas2c64_parser;
+  Windows, SysUtils, Classes, Forms, Dialogs, SynEdit, SynHighlighterPas, StdCtrls, ExtCtrls, Menus, unit_pas2c64_parser, Controls;
 
 type
 
@@ -16,6 +13,15 @@ type
 
   TFormMainForm = class(TForm)
     GroupBox_SourceCode: TGroupBox;
+    MainMenu: TMainMenu;
+    MenuItem_NewSource: TMenuItem;
+    MenuItem_CompileAndRun: TMenuItem;
+    MenuItem_Project: TMenuItem;
+    MenuItem_Compile: TMenuItem;
+    MenuItem_Exit: TMenuItem;
+    MenuItem_SaveSource: TMenuItem;
+    MenuItem_OpenSource: TMenuItem;
+    MenuItem_File: TMenuItem;
     Panel1: TPanel;
     Button_Compile: TButton;
     Button_CompileAndRun: TButton;
@@ -34,10 +40,18 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure CheckBox_UseBasicLoaderClick(Sender: TObject);
+    procedure MenuItem_ExitClick(Sender: TObject);
+    procedure MenuItem_NewSourceClick(Sender: TObject);
+    procedure MenuItem_OpenSourceClick(Sender: TObject);
+    procedure MenuItem_SaveSourceClick(Sender: TObject);
+    procedure SynEdit_SourceCodeKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
     FParser: TPas2C64_Parser;
+    FFileName: String;
     procedure CompileCode;
+    procedure UpdateCaption;
   public
     { Public declarations }
   end;
@@ -90,6 +104,72 @@ begin
   Edit_CodeAddr .Enabled := not CheckBox_UseBasicLoader.Checked;
 end;
 
+procedure TFormMainForm.MenuItem_ExitClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TFormMainForm.MenuItem_NewSourceClick(Sender: TObject);
+begin
+  SynEdit_SourceCode.BeginUpdate;
+  SynEdit_SourceCode.Lines.Clear;
+  SynEdit_SourceCode.EndUpdate;
+  FFileName := 'Untitled.pas';
+  UpdateCaption;
+end;
+
+procedure TFormMainForm.MenuItem_OpenSourceClick(Sender: TObject);
+var
+   od: TOpenDialog;
+begin
+  od := TOpenDialog.Create(Self);
+  try
+    od.Title      := 'Open pas2c64 Source Code';
+    od.DefaultExt := '.pas';
+    od.Filter     := 'pas2c64 file (*.pas)|*.pas';
+    od.Options    := od.Options + [ofPathMustExist,ofFileMustExist];
+
+    if od.Execute then
+    begin
+      SynEdit_SourceCode.BeginUpdate;
+      SynEdit_SourceCode.Lines.LoadFromFile(od.FileName);
+      SynEdit_SourceCode.EndUpdate;
+      FFileName := od.FileName;
+      UpdateCaption;
+    end;
+  finally
+    od.Free;
+  end;
+end;
+
+procedure TFormMainForm.MenuItem_SaveSourceClick(Sender: TObject);
+var
+   sd: TOpenDialog;
+begin
+  sd := TOpenDialog.Create(Self);
+  try
+    sd.Title      := 'Save pas2c64 Source Code';
+    sd.DefaultExt := '.pas';
+    sd.Filter     := 'pas2c64 file (*.pas)|*.pas';
+    sd.Options    := sd.Options + [ofPathMustExist,ofOverwritePrompt];
+
+    if sd.Execute then
+    begin
+      FFileName := ChangeFileExt(sd.FileName,'.pas');
+
+      SynEdit_SourceCode.Lines.SaveToFile(sd.FileName);
+      UpdateCaption;
+    end;
+  finally
+    sd.Free;
+  end;
+end;
+
+procedure TFormMainForm.SynEdit_SourceCodeKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+end;
+
 procedure TFormMainForm.CompileCode;
 var
   SrcStream: TMemoryStream;
@@ -134,6 +214,12 @@ end;
 procedure TFormMainForm.FormCreate(Sender: TObject);
 begin
   FParser := TPas2C64_Parser.Create;
+
+  SynEdit_SourceCode.BeginUpdate;
+  SynEdit_SourceCode.Lines.Clear;
+  SynEdit_SourceCode.EndUpdate;
+  FFileName := 'Untitled.pas';
+  UpdateCaption;
 end;
 
 procedure TFormMainForm.FormDestroy(Sender: TObject);
@@ -141,23 +227,14 @@ begin
   FParser.Free;
 end;
 
+procedure TFormMainForm.UpdateCaption;
+begin
+  Caption := 'Pas2C64 Compiler - ' + ExtractFileName(FFileName);
+end;
+
 procedure TFormMainForm.FormKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if (Key = VK_F9) then
-  begin
-    CompileCode;
-
-    if FParser.ErrorMsg = '' then
-    begin
-      if not (ssCTRL in Shift) then
-      // compile and run
-        ShellExecute(handle,'open','pas2c64_compileandruncode.bat',nil,nil,SW_SHOWNORMAL)
-      else
-      // compile only
-        ShellExecute(handle,'open','pas2c64_compilecode.bat',nil,nil,SW_SHOWNORMAL);
-    end;
-  end;
 end;
 
 procedure TFormMainForm.Button_CompileClick(Sender: TObject);
