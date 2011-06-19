@@ -44,6 +44,8 @@ var
   Token_comment1     : Integer;
   Token_comment2s    : Integer;
   Token_comment2e    : Integer;
+  Token_comment3s    : Integer;
+  Token_comment3e    : Integer;
   Token_range        : Integer;
 
   // Keyword tokens
@@ -51,6 +53,7 @@ var
   Token_proc         : Integer;
   Token_begin        : Integer;
   Token_end          : Integer;
+  Token_asm          : Integer;
   Token_if           : Integer;
   Token_then         : Integer;
   Token_else         : Integer;
@@ -116,6 +119,8 @@ type
     FCharacter      : Char;
     FToken          : TToken;
     FAllowBinNumbers: Boolean;
+    FLinePos        : Integer;
+    FCharacterPos   : Integer;
   protected
     // override these if you want to alter the tokens being registered
     procedure RegisterGenericTokens; virtual;
@@ -328,6 +333,8 @@ begin
 
   FAllowBinNumbers := True;
   FStringChar      := '''';
+  FLinePos         := 1;
+  FCharacterPos    := 1;
 
   Token_unknown      := RegisterGenericToken('Unknown');
   Token_eof          := RegisterGenericToken('EOF');
@@ -353,7 +360,7 @@ end;
 
 procedure TBaseParser.Error(const aErrorMsg: String);
 begin
-  raise TParseException.Create(aErrorMsg);
+  raise TParseException.Create(Format('Line %d,Char %d: %s',[FLinePos,FCharacterPos,aErrorMsg]));
 end;
 
 procedure TBaseParser.Emit(const aMsg: String);
@@ -420,6 +427,16 @@ begin
   begin
     FSrcStream.Read(c,SizeOf(c));
     FCharacter := WideChar(c);
+    Inc(FCharacterPos);
+    if FCharacter = #13 then
+    begin
+      Inc(FLinePos);
+      FCharacterPos := 1;
+      GetCharacter;
+
+      if FCharacter = #10 then
+        GetCharacter;
+    end;
   end;
 end;
 
@@ -667,6 +684,8 @@ begin
       '.' : FToken.TokenType := Token_period;
       '@' : FToken.TokenType := Token_at;
       '#' : FToken.TokenType := Token_hash;
+      '{' : FToken.TokenType := Token_comment2s;
+      '}' : FToken.TokenType := Token_comment2e;
     else
     end;
     GetCharacter;
@@ -684,6 +703,16 @@ procedure TBaseParser.SkipWhiteSpaces;
 begin
   while IsWhiteSpace(FCharacter) do
     GetCharacter;
+
+  if FCharacter = '{' then
+  begin
+    while (FCharacter <> '}') and (FCharacter <> #0) do
+    begin
+      GetCharacter;
+    end;
+    GetCharacter;
+    SkipWhiteSpaces;
+  end;
 end;
 
 function  TBaseParser.Accept(const aTokenType: Integer): Boolean;
@@ -758,6 +787,8 @@ begin
   Token_comment1     := RegisterGenericToken('//');
   Token_comment2s    := RegisterGenericToken('{');
   Token_comment2e    := RegisterGenericToken('}');
+  Token_comment3s    := RegisterGenericToken('(*');
+  Token_comment3e    := RegisterGenericToken('*)');
   Token_range        := RegisterGenericToken('..');
 end;
 
@@ -767,6 +798,7 @@ begin
   Token_proc         := RegisterKeywordToken('procedure');
   Token_begin        := RegisterKeywordToken('begin');
   Token_end          := RegisterKeywordToken('end');
+  Token_asm          := RegisterKeywordToken('asm');
   Token_if           := RegisterKeywordToken('if');
   Token_then         := RegisterKeywordToken('then');
   Token_else         := RegisterKeywordToken('else');

@@ -7,14 +7,17 @@ KeyCode:
 //  input: none
 //  output: none
 //------------------------------------
-WaitForKey:
-    pha  // save A
+proc_waitforkey:
+    pha
 WaitForKeyLoop:
     lda CURRKEY
     // if no key is pressed, it holds the value #$40
     cmp #$40
     beq WaitForKeyLoop
-    pla  // restore A
+    // clear the last key
+    lda #0
+    sta CURRKEY
+    pla
     rts
 
 //------------------------------------
@@ -70,4 +73,37 @@ PrintStringAY_loop:
     iny
     jmp PrintStringAY_loop
 PrintStringAY_continue:
+    rts
+
+//------------------------------------
+// procedure SwitchToUpperCase - switch charset to upper case only
+//------------------------------------
+proc_switchtouppercase:
+    pha
+    lda $d018
+    and #253 // clear bit 2
+    sta $d018
+    pla
+    rts
+
+//------------------------------------
+// procedure SwitchToLowerCase - switch charset to lower & upper case
+//------------------------------------
+proc_switchtolowercase:
+    pha
+    lda $d018
+    ora #2 // set bit 2
+    sta $d018
+    pla
+    rts
+
+//------------------------------------
+// procedure ToggleCase - switch charset to upper case only
+//------------------------------------
+proc_togglecase:
+    pha
+    lda $d018
+    eor #2 // toggle bit 2
+    sta $d018
+    pla
     rts

@@ -601,7 +601,7 @@ begin
   if not(aReg in cLoadRegIM) then
     raise C64OpException.Create('LoadReg_IM: Invalid register "'+cRegisterName[aReg]+'"');
 
-  WriteCode(Format('ld%s #$%.2x',[cRegisterName[aReg],aConstValue]));
+  WriteCode(LowerCase(Format('ld%s #$%.2x',[cRegisterName[aReg],aConstValue])));
 end;
 
 procedure TCodeGenerator_C64.LoadRegW_IM(const aLoReg,aHiReg: TRegister; const aConstValue: Word);
@@ -609,8 +609,8 @@ begin
   if not (aLoReg in cLoadRegIM) or not (aHiReg in cLoadRegIM) then
     raise C64OpException.Create('LoadRegW_IM: Invalid register(s) '+Format('"%s, %s"',[cRegisterName[aLoReg]+cRegisterName[aHiReg]]));
 
-  WriteCode(Format('ld%s <#$%.4x',[cRegisterName[aLoReg],aConstValue]));
-  WriteCode(Format('ld%s >#$%.4x',[cRegisterName[aHiReg],aConstValue]));
+  WriteCode(LowerCase(Format('ld%s <#$%.4x',[cRegisterName[aLoReg],aConstValue])));
+  WriteCode(LowerCase(Format('ld%s >#$%.4x',[cRegisterName[aHiReg],aConstValue])));
 end;
 
 procedure TCodeGenerator_C64.LoadReg_Mem(const aReg: TRegister; const aAddr: Word);
@@ -618,7 +618,7 @@ begin
   if not(aReg in cLoadReg) then
     raise C64OpException.Create('LoadReg_Mem: Invalid register "'+cRegisterName[aReg]+'"');
 
-  WriteCode(Format('ld%s $%.4x',[cRegisterName[aReg],aAddr]));
+  WriteCode(LowerCase(Format('ld%s $%.4x',[cRegisterName[aReg],aAddr])));
 end;
 
 procedure TCodeGenerator_C64.StoreReg(const aReg: TRegister; const aAddr: Word);
@@ -627,9 +627,9 @@ begin
     raise C64OpException.Create('StoreReg: Invalid register "'+cRegisterName[aReg]+'"');
 
   if aAddr <= 255 then
-    WriteCode(Format('st%s $%.2x',[cRegisterName[aReg],aAddr]))
+    WriteCode(LowerCase(Format('st%s $%.2x',[cRegisterName[aReg],aAddr])))
   else
-    WriteCode(Format('st%s $%.4x',[cRegisterName[aReg],aAddr]));
+    WriteCode(LowerCase(Format('st%s $%.4x',[cRegisterName[aReg],aAddr])));
 end;
 
 procedure TCodeGenerator_C64.OpCode(const aOpCode: TOpCode);

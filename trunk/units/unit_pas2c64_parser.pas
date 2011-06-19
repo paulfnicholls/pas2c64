@@ -14,17 +14,19 @@ uses
 
 // tokens
 var
-  Token_writememb  : Integer;
-  Token_writememw  : Integer;
-  Token_readmemb   : Integer;
+  Token_poke       : Integer;
+  Token_pokew      : Integer;
+  Token_peek       : Integer;
+  Token_peekw      : Integer;
   Token_copymemb   : Integer;
   Token_write      : Integer;
   Token_writeln    : Integer;
   Token_interrupt  : Integer;
+  Token_assembler  : Integer;
   Token_incmemb    : Integer;
   Token_setint     : Integer;
   Token_stdirq     : Integer;
-  Token_waitforkey : Integer;
+//  Token_waitforkey : Integer;
 
 type
   TExpressionMode = (
@@ -92,7 +94,10 @@ type
     function  ParseExpressionAsToken(const aAllowedTokenTypes: array of  Integer): TToken;
 
     // statements types
-    procedure ParseWriteMemB;
+    procedure ParsePoke;
+    procedure ParsePokeW;
+    procedure ParsePeek;
+    procedure ParsePeekW;
     procedure ParseCopyMemB;
     procedure ParseIncMemB;
     procedure ParseStdIRQ;
@@ -186,17 +191,19 @@ procedure TPas2C64_Parser.RegisterKeywordTokens;
 begin
   inherited RegisterKeywordTokens;
 
-  Token_writememb  := RegisterKeywordToken('WriteMemB');
-  Token_writememw  := RegisterKeywordToken('WriteMemW');
-  Token_readmemb   := RegisterKeywordToken('ReadMemB');
+  Token_poke       := RegisterKeywordToken('Poke');
+  Token_pokew      := RegisterKeywordToken('PokeW');
+  Token_peek       := RegisterKeywordToken('Peek');
+  Token_peekw      := RegisterKeywordToken('PeekW');
   Token_copymemb   := RegisterKeywordToken('CopyMemB');
   Token_write      := RegisterKeywordToken('Write');
   Token_writeln    := RegisterKeywordToken('WriteLn');
   Token_interrupt  := RegisterKeywordToken('Interrupt');
+  Token_assembler  := RegisterKeywordToken('Assembler');
   Token_incmemb    := RegisterKeywordToken('IncMemB');
   Token_setint     := RegisterKeywordToken('SetInterrupt');
   Token_stdirq     := RegisterKeywordToken('StdIRQ');
-  Token_waitforkey := RegisterKeywordToken('WaitForKey');
+//  Token_waitforkey := RegisterKeywordToken('WaitForKey');
 end;
 
 function  TPas2C64_Parser.Simplify_Neg(const a: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
@@ -931,7 +938,7 @@ end;
 
 // statements
 
-procedure TPas2C64_Parser.ParseWriteMemB;
+procedure TPas2C64_Parser.ParsePoke;
 var
   AddrStr: AnsiString;
   AddrNum: Int64;
@@ -944,19 +951,80 @@ begin
   Expect(Token_lparen);
   AddrStr := ParseExpressionAsToken([Token_intnumber]).TokenValue;
   GetIntegerTypeAndValue(AddrStr,AddrType,AddrNum);
-  if not IntegerInRange(AddrNum,$0000,$FFFF) then Error('WriteMemB: Address out of range [$0000,$FFFF]');
+  if not IntegerInRange(AddrNum,$0000,$FFFF) then Error('Poke: Address out of range [$0000,$FFFF]');
 
   Expect(Token_comma);
 
   ValueStr := ParseExpressionAsToken([Token_intnumber]).TokenValue;
   GetIntegerTypeAndValue(ValueStr,ValueType,ValueNum);
-  if not IntegerInRange(ValueNum,$00,$FF) then Error('WriteMemB: Value out of range [$00,$FF]');
+  if not IntegerInRange(ValueNum,$00,$FF) then Error('Poke: Value out of range [$00,$FF]');
 
   Expect(Token_rparen);
-  Expect(Token_semicolon);
 
   FCodeGen.LoadReg_IM(regA,ValueNum);
   FCodeGen.StoreReg(regA,AddrNum);
+end;
+
+procedure TPas2C64_Parser.ParsePokeW;
+var
+  AddrStr: AnsiString;
+  AddrNum: Int64;
+  AddrType: TIntNumType;
+
+  ValueStr: AnsiString;
+  ValueNum: Int64;
+  ValueType: TIntNumType;
+begin
+  Expect(Token_lparen);
+  AddrStr := ParseExpressionAsToken([Token_intnumber]).TokenValue;
+  GetIntegerTypeAndValue(AddrStr,AddrType,AddrNum);
+  if not IntegerInRange(AddrNum,$0000,$FFFF) then Error('PokeW: Address out of range [$0000,$FFFF]');
+
+  Expect(Token_comma);
+
+  ValueStr := ParseExpressionAsToken([Token_intnumber]).TokenValue;
+  GetIntegerTypeAndValue(ValueStr,ValueType,ValueNum);
+  if not IntegerInRange(ValueNum,$0000,$FFFF) then Error('PokeW: Value out of range [$0000,$FFFF]');
+
+  Expect(Token_rparen);
+
+  FCodeGen.WriteCode('lda #<' + ValueStr);
+  FCodeGen.StoreReg(regA,AddrNum);
+  FCodeGen.WriteCode('lda #>' + ValueStr);
+  FCodeGen.StoreReg(regA,AddrNum+1);
+end;
+
+procedure TPas2C64_Parser.ParsePeek;
+var
+  AddrStr: AnsiString;
+  AddrNum: Int64;
+  AddrType: TIntNumType;
+begin
+  Expect(Token_lparen);
+  AddrStr := ParseExpressionAsToken([Token_intnumber]).TokenValue;
+  GetIntegerTypeAndValue(AddrStr,AddrType,AddrNum);
+  if not IntegerInRange(AddrNum,$0000,$FFFF) then Error('Peek: Address out of range [$0000,$FFFF]');
+  Expect(Token_rparen);
+
+//  FCodeGen.LoadReg_IM(regA,ValueNum);
+//  FCodeGen.StoreReg(regA,AddrNum);
+end;
+
+procedure TPas2C64_Parser.ParsePeekW;
+var
+  AddrStr: AnsiString;
+  AddrNum: Int64;
+  AddrType: TIntNumType;
+begin
+  Expect(Token_lparen);
+  AddrStr := ParseExpressionAsToken([Token_intnumber]).TokenValue;
+  GetIntegerTypeAndValue(AddrStr,AddrType,AddrNum);
+  if not IntegerInRange(AddrNum,$0000,$FFFF) then Error('PeekW: Address out of range [$0000,$FFFF]');
+
+  Expect(Token_rparen);
+
+//  FCodeGen.LoadReg_IM(regA,ValueNum);
+//  FCodeGen.StoreReg(regA,AddrNum);
 end;
 
 procedure TPas2C64_Parser.ParseCopyMemB;
@@ -984,7 +1052,6 @@ begin
   if not IntegerInRange(DstAddrNum,$0000,$FFFF) then Error('CopyMemB: Destination address out of range [$0000,$FFFF]');
 
   Expect(Token_rparen);
-  Expect(Token_semicolon);
 
   FCodeGen.LoadReg_Mem(regA,SrcAddrNum);
   FCodeGen.StoreReg(regA,DstAddrNum);
@@ -1134,13 +1201,16 @@ var
 begin
   TokenValue := Token.TokenValue;
 
-  if      Accept(Token_writememb)  then ParseWriteMemB
+  if      Accept(Token_poke)       then ParsePoke
+  else if Accept(Token_pokew)      then ParsePokeW
+  else if Accept(Token_peek)       then ParsePeek
+  else if Accept(Token_peekw)      then ParsePeekW
   else if Accept(Token_copymemb)   then ParseCopyMemB
   else if Accept(Token_writeln)    then ParseWriteLn
   else if Accept(Token_incmemb)    then ParseIncMemB
   else if Accept(Token_stdirq)     then ParseStdIRQ
   else if Accept(Token_setint)     then ParseSetInterrupt
-  else if Accept(Token_waitforkey) then ParseWaitForKey
+//  else if Accept(Token_waitforkey) then ParseWaitForKey
   else if Accept(Token_ident)      then ParseProcedureCallOrAssignment(TokenValue);
 end;
 
@@ -1296,6 +1366,7 @@ procedure TPas2C64_Parser.ParseProcDecl;
 var
   ProcName: String;
   IsInterrupt: Boolean;
+  IsAssembler: Boolean;
 begin
   ProcName := LowerCase(Token.TokenValue);
 
@@ -1312,23 +1383,36 @@ begin
   Expect(Token_semicolon);
 
   IsInterrupt := False;
+  IsAssembler := False;
+
   if Accept(Token_interrupt) then
   // is interrupt routine
   begin
     FSymbolTable.AddSymbol(ProcName,'',cSymClass_Interrupt,cSymSubClass_None);
     IsInterrupt := True;
+    Expect(Token_semicolon);
+  end
+  else
+  if Accept(Token_assembler) then
+  begin
+    FSymbolTable.AddSymbol(ProcName,'',cSymClass_AsmProc,cSymSubClass_None);
+    IsAssembler := True;
+    Expect(Token_semicolon);
   end
   else
   // is regular procedure
     FSymbolTable.AddSymbol(ProcName,'',cSymClass_Procedure,cSymSubClass_None);
 
-  if IsInterrupt then
-    Expect(Token_semicolon);
-
-  Expect(Token_begin);
+  if IsAssembler then
+    Expect(Token_asm)
+  else
+    Expect(Token_begin);
 
   if IsInterrupt then
     FCodeGen.WriteLabel('int_' + ProcName)
+  else
+  if IsAssembler then
+    FCodeGen.WriteLabel('asm_' + ProcName)
   else
     FCodeGen.WriteLabel('proc_' + ProcName);
 
@@ -1398,6 +1482,11 @@ procedure TPas2C64_Parser.RegisterConstants;
     FSymbolTable.AddSymbol(aName,aValue,SymClass,SymSubClass);
   end;
 
+  procedure RegisterProcedure(const aName: String);
+  begin
+    FSymbolTable.AddSymbol(aName,'',cSymClass_Procedure,cSymSubClass_None);
+  end;
+
 begin
 // Standard Kernal ROM routines
   RegisterConstant('CHKIN'      , '$ffc6', Token_intnumber);
@@ -1463,6 +1552,12 @@ begin
 // definitions
   RegisterConstant('TRUE'       , '$ff'  , Token_intnumber);
   RegisterConstant('FALSE'      , '$00'  , Token_intnumber);
+
+// procedures in Routines_RTL.asm
+  RegisterProcedure('SwitchToUpperCase');
+  RegisterProcedure('SwitchToLowerCase');
+  RegisterProcedure('ToggleCase');
+  RegisterProcedure('WaitForKey');
 end;
 
 end.
