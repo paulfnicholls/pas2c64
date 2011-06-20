@@ -51,6 +51,7 @@ var
   // Keyword tokens
   Token_var          : Integer;
   Token_proc         : Integer;
+  Token_func         : Integer;
   Token_begin        : Integer;
   Token_end          : Integer;
   Token_asm          : Integer;
@@ -745,6 +746,9 @@ begin
   FErrorMsg := '';
   Result    := True;
 
+  FLinePos         := 1;
+  FCharacterPos    := 1;
+  
   // initialize parser
   GetCharacter;
 
@@ -796,6 +800,7 @@ procedure TBaseParser.RegisterKeywordTokens;
 begin
   Token_var          := RegisterKeywordToken('var');
   Token_proc         := RegisterKeywordToken('procedure');
+  Token_func         := RegisterKeywordToken('function');
   Token_begin        := RegisterKeywordToken('begin');
   Token_end          := RegisterKeywordToken('end');
   Token_asm          := RegisterKeywordToken('asm');
