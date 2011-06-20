@@ -12,8 +12,9 @@ const
   cSymClass_Constant  = 0;
   cSymClass_Variable  = 1;
   cSymClass_Procedure = 2;
-  cSymClass_Interrupt = 3;
-  cSymClass_AsmProc   = 4;
+  cSymClass_Function  = 3;
+  cSymClass_Interrupt = 4;
+  cSymClass_AsmProc   = 5;
 
   cSymSubClass_None   = -1;
   cSymSubClass_SInt8  = 0;
