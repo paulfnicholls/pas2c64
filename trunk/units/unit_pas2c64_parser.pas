@@ -1703,6 +1703,7 @@ begin
   else
     Expect(Token_begin);
 
+  FCodeGen.WriteOutputCR('');
   if IsInterrupt then
     FCodeGen.WriteLabel('int_' + ProcName)
   else
@@ -1795,9 +1796,9 @@ procedure TPas2C64_Parser.RegisterConstants;
     FSymbolTable.AddSymbol(aName,aValue,SymClass,SymSubClass);
   end;
 
-  procedure RegisterProcedure(const aName: String);
+  procedure RegisterAsmProcedure(const aName: String);
   begin
-    FSymbolTable.AddSymbol(aName,'',cSymClass_Procedure,cSymSubClass_None);
+    FSymbolTable.AddSymbol(aName,'',cSymClass_AsmProc,cSymSubClass_None);
   end;
 
 begin
@@ -1867,10 +1868,10 @@ begin
   RegisterConstant('FALSE'      , '$00'  , Token_intnumber);
 
 // procedures in Routines_RTL.asm
-  RegisterProcedure('SwitchToUpperCase');
-  RegisterProcedure('SwitchToLowerCase');
-  RegisterProcedure('ToggleCase');
-  RegisterProcedure('WaitForKey');
+  RegisterAsmProcedure('SwitchToUpperCase');
+  RegisterAsmProcedure('SwitchToLowerCase');
+  RegisterAsmProcedure('ToggleCase');
+  RegisterAsmProcedure('WaitForKey');
 end;
 
 end.

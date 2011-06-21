@@ -7,7 +7,7 @@ KeyCode:
 //  input: none
 //  output: none
 //------------------------------------
-proc_waitforkey:
+asm_waitforkey:
     pha
 WaitForKeyLoop:
     lda CURRKEY
@@ -78,7 +78,7 @@ PrintStringAY_continue:
 //------------------------------------
 // procedure SwitchToUpperCase - switch charset to upper case only
 //------------------------------------
-proc_switchtouppercase:
+asm_switchtouppercase:
     pha
     lda $d018
     and #253 // clear bit 2
@@ -89,7 +89,7 @@ proc_switchtouppercase:
 //------------------------------------
 // procedure SwitchToLowerCase - switch charset to lower & upper case
 //------------------------------------
-proc_switchtolowercase:
+asm_switchtolowercase:
     pha
     lda $d018
     ora #2 // set bit 2
@@ -100,7 +100,7 @@ proc_switchtolowercase:
 //------------------------------------
 // procedure ToggleCase - switch charset to upper case only
 //------------------------------------
-proc_togglecase:
+asm_togglecase:
     pha
     lda $d018
     eor #2 // toggle bit 2
