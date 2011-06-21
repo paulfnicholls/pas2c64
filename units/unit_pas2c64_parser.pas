@@ -30,7 +30,7 @@ var
 
 // asm tokens
   Token_adc        : Integer;
-  Token_and        : Integer;
+//  Token_and        : Integer;
   Token_asl        : Integer;
   Token_bcc        : Integer;
   Token_bcs        : Integer;
@@ -1407,6 +1407,33 @@ var
   Line: String;
   t: TToken;
 begin
+  t := Token;
+  if Accept(Token_ident) then
+  // label
+  begin
+    FCodeGen.WriteLabel(t.TokenValue);
+
+    // skip rest of tokens till next valid token or end
+    while not(Token.TokenType in FAsmTokens) and not(Token.TokenType  in [Token_ident,Token_end]) do
+      GetToken;
+  end
+  else
+  if t.TokenType in FAsmTokens then
+  begin
+    Line := t.TokenValue + ' ';
+
+    GetToken;
+    // skip rest of tokens till next valid token or end
+    while not(Token.TokenType in FAsmTokens) and not(Token.TokenType  in [Token_ident,Token_end]) do
+    begin
+      Line := Line + Token.TokenValue;
+      GetToken;
+    end;
+
+    FCodeGen.WriteCode(Line);
+  end;
+
+  Exit;
   if Token.TokenType <> Token_end then
     GetToken;
   Exit;
