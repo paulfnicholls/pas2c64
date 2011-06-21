@@ -134,6 +134,9 @@ begin
       SynEdit_SourceCode.BeginUpdate;
       SynEdit_SourceCode.Lines.LoadFromFile(od.FileName);
       SynEdit_SourceCode.EndUpdate;
+
+      SynEdit_AssemblyOutput.ClearAll;
+
       FFileName := od.FileName;
       UpdateCaption;
     end;
@@ -144,13 +147,14 @@ end;
 
 procedure TFormMainForm.MenuItem_SaveSourceClick(Sender: TObject);
 var
-   sd: TOpenDialog;
+   sd: TSaveDialog;
 begin
-  sd := TOpenDialog.Create(Self);
+  sd := TSaveDialog.Create(Self);
   try
     sd.Title      := 'Save pas2c64 Source Code';
     sd.DefaultExt := '.pas';
     sd.Filter     := 'pas2c64 file (*.pas)|*.pas';
+    sd.FileName   := ChangeFileExt(ExtractFileName(FFileName),'.pas');
     sd.Options    := sd.Options + [ofPathMustExist,ofOverwritePrompt];
 
     if sd.Execute then

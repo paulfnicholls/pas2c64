@@ -8,12 +8,9 @@ end;
 
 procedure Init;
 begin
-{  SetInterrupt(FlashBorderIRQ);}
+  SetInterrupt(FlashBorderIRQ);
 end;
 
 begin
   Init;
-  SwitchToLowerCase;
-  WaitForKey;
-  SwitchToUpperCase;
 end.
