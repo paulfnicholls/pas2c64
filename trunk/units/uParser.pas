@@ -10,6 +10,8 @@ uses
 
 const
   cCRLF = #13#10;
+  cCR   = #13;
+  cLF   = #10;
 
 // tokens
 var
@@ -120,8 +122,8 @@ type
     FCharacter      : Char;
     FToken          : TToken;
     FAllowBinNumbers: Boolean;
-    FLinePos        : Integer;
-    FCharacterPos   : Integer;
+    FLineCount      : Integer;
+    FCharPos        : Integer;
   protected
     // override these if you want to alter the tokens being registered
     procedure RegisterGenericTokens; virtual;
@@ -143,6 +145,9 @@ type
 
     function  Accept(const aTokenType: Integer): Boolean;
     procedure Expect(const aTokenType: Integer);
+
+    function  ReadUntil(const aCharSet: TCharSet): String;
+    function  ReadLn: String;
 
     procedure GetCharacter;
     procedure GetDecNumber;
@@ -170,6 +175,8 @@ type
     property Token           : TToken  read FToken;
     property ErrorMsg        : String  read FErrorMsg;
     property AllowBinNumbers : Boolean read FAllowBinNumbers write FAllowBinNumbers;
+    property LineCount       : Integer read FLineCount;
+    property CharPos         : Integer read FCharPos;
   end;
 
 { --- Routines -------------------------------------------------------------- }
@@ -236,7 +243,8 @@ procedure CheckTokenForKeyword(var aToken: TToken);
 var
   Index: Integer;
 begin
-  if not KeywordList.Find(LowerCase(aToken.TokenValue),Index) then Exit;
+  if not KeywordList.Find(LowerCase(aToken.TokenValue),Index) then
+    Exit;
 
   aToken.TokenType := Integer(KeywordList.Objects[Index]);
 end;
@@ -334,8 +342,8 @@ begin
 
   FAllowBinNumbers := True;
   FStringChar      := '''';
-  FLinePos         := 1;
-  FCharacterPos    := 1;
+  FLineCount       := 1;
+  FCharPos         := 1;
 
   Token_unknown      := RegisterGenericToken('Unknown');
   Token_eof          := RegisterGenericToken('EOF');
@@ -361,7 +369,7 @@ end;
 
 procedure TBaseParser.Error(const aErrorMsg: String);
 begin
-  raise TParseException.Create(Format('Line %d,Char %d: %s',[FLinePos,FCharacterPos,aErrorMsg]));
+  raise TParseException.Create(Format('Line %d,Char %d: %s',[FLineCount,FCharPos,aErrorMsg]));
 end;
 
 procedure TBaseParser.Emit(const aMsg: String);
@@ -428,16 +436,7 @@ begin
   begin
     FSrcStream.Read(c,SizeOf(c));
     FCharacter := WideChar(c);
-    Inc(FCharacterPos);
-    if FCharacter = #13 then
-    begin
-      Inc(FLinePos);
-      FCharacterPos := 1;
-      GetCharacter;
-
-      if FCharacter = #10 then
-        GetCharacter;
-    end;
+    Inc(FCharPos);
   end;
 end;
 
@@ -705,14 +704,39 @@ begin
   while IsWhiteSpace(FCharacter) do
     GetCharacter;
 
-  if FCharacter = '{' then
+  if FCharacter = cCR then
+  // new line
   begin
-    while (FCharacter <> '}') and (FCharacter <> #0) do
+    Inc(FLineCount);
+    FCharPos := 1;
+    if FCharacter = cLF then
+      GetCharacter;
+    SkipWhiteSpaces;
+  end
+  else
+  if FCharacter = '{' then
+  // multi-line comment
+  begin
+    while FCharacter <> '}'do
     begin
       GetCharacter;
+      if FCharacter = #0 then Break;
     end;
-    GetCharacter;
+    if FCharacter = '{' then
+      GetCharacter;
     SkipWhiteSpaces;
+  end
+  else
+  if FCharacter = '/' then
+  begin
+    GetToken;
+    if Accept(Token_comment1) then
+    // single-line comment "//"
+    begin
+      while (FCharacter <> #0) and (FCharacter <> cCR) do
+        GetCharacter;
+      SkipWhiteSpaces;
+    end;
   end;
 end;
 
@@ -738,6 +762,32 @@ begin
   end;
 end;
 
+function  TBaseParser.ReadUntil(const aCharSet: TCharSet): String;
+begin
+  Result := '';
+
+  while not (FCharacter in aCharSet) and (FCharacter <> #0) do
+  begin
+    Result := Result + FCharacter;
+    GetCharacter;
+  end;
+  SkipWhiteSpaces;
+  GetToken;
+end;
+
+function  TBaseParser.ReadLn: String;
+begin
+  Result := '';
+
+  while (FCharacter <> cCR) and (FCharacter <> #0) do
+  begin
+    Result := Result + FCharacter;
+    GetCharacter;
+  end;
+  SkipWhiteSpaces;
+  GetToken;
+end;
+
 function  TBaseParser.Execute(const aSrcStream,aDstStream: TStream): Boolean;
 begin
   FSrcStream := aSrcStream;
@@ -746,8 +796,8 @@ begin
   FErrorMsg := '';
   Result    := True;
 
-  FLinePos         := 1;
-  FCharacterPos    := 1;
+  FLineCount := 1;
+  FCharPos   := 1;
   
   // initialize parser
   GetCharacter;

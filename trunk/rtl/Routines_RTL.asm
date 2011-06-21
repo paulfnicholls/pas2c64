@@ -106,4 +106,4 @@ proc_togglecase:
     eor #2 // toggle bit 2
     sta $d018
     pla
-    rts
+    rts    

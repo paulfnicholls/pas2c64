@@ -21,12 +21,71 @@ var
   Token_copymemb   : Integer;
   Token_write      : Integer;
   Token_writeln    : Integer;
+  Token_readln     : Integer;
   Token_interrupt  : Integer;
   Token_assembler  : Integer;
   Token_incmemb    : Integer;
   Token_setint     : Integer;
   Token_stdirq     : Integer;
-//  Token_waitforkey : Integer;
+
+// asm tokens
+  Token_adc        : Integer;
+  Token_and        : Integer;
+  Token_asl        : Integer;
+  Token_bcc        : Integer;
+  Token_bcs        : Integer;
+  Token_beq        : Integer;
+  Token_bit        : Integer;
+  Token_bmi        : Integer;
+  Token_bne        : Integer;
+  Token_bpl        : Integer;
+  Token_brk        : Integer;
+  Token_bvc        : Integer;
+  Token_bvs        : Integer;
+  Token_clc        : Integer;
+  Token_cld        : Integer;
+  Token_cli        : Integer;
+  Token_clv        : Integer;
+  Token_cmp        : Integer;
+  Token_cpx        : Integer;
+  Token_cpy        : Integer;
+  Token_dec        : Integer;
+  Token_dex        : Integer;
+  Token_dey        : Integer;
+  Token_eor        : Integer;
+  Token_inc        : Integer;
+  Token_inx        : Integer;
+  Token_iny        : Integer;
+  Token_jmp        : Integer;
+  Token_jsr        : Integer;
+  Token_lda        : Integer;
+  Token_ldx        : Integer;
+  Token_ldy        : Integer;
+  Token_lsr        : Integer;
+  Token_nop        : Integer;
+  Token_ora        : Integer;
+  Token_pha        : Integer;
+  Token_php        : Integer;
+  Token_pla        : Integer;
+  Token_plp        : Integer;
+  Token_rol        : Integer;
+  Token_ror        : Integer;
+  Token_rti        : Integer;
+  Token_rts        : Integer;
+  Token_sbc        : Integer;
+  Token_sec        : Integer;
+  Token_sed        : Integer;
+  Token_sei        : Integer;
+  Token_sta        : Integer;
+  Token_stx        : Integer;
+  Token_sty        : Integer;
+  Token_tax        : Integer;
+  Token_tay        : Integer;
+  Token_tsx        : Integer;
+  Token_txa        : Integer;
+  Token_txs        : Integer;
+  Token_tya        : Integer;
+
 
 type
   TExpressionMode = (
@@ -41,6 +100,7 @@ type
     FSymbolTable    : TPas2C64_SymbolTable;
     FCodeGen        : TCodeGenerator_C64;
     FExpression     : TExpressionNodeList;
+    FAsmTokens      : set of Byte;
 
     function  IsIdent(const aStr: String): Boolean;
     procedure GetConstInfo(const aToken: TToken;
@@ -103,6 +163,7 @@ type
     procedure ParseStdIRQ;
     procedure ParseSetInterrupt;
     procedure ParseWriteLn;
+    procedure ParseReadLn;
     procedure ParseWaitForKey;
 
     procedure ParseProcedureCall(const aSym: TSymbol);
@@ -112,6 +173,9 @@ type
 
     procedure ParseStatement;
     procedure ParseBlock;
+
+    procedure ParseAsmStatement;
+    procedure ParseAsmBlock;
 
     procedure ParseConstDecls;
     procedure ParseVarDecls;
@@ -247,12 +311,79 @@ begin
   Token_copymemb   := RegisterKeywordToken('CopyMemB');
   Token_write      := RegisterKeywordToken('Write');
   Token_writeln    := RegisterKeywordToken('WriteLn');
+  Token_readln     := RegisterKeywordToken('ReadLn');
   Token_interrupt  := RegisterKeywordToken('Interrupt');
   Token_assembler  := RegisterKeywordToken('Assembler');
   Token_incmemb    := RegisterKeywordToken('IncMemB');
   Token_setint     := RegisterKeywordToken('SetInterrupt');
   Token_stdirq     := RegisterKeywordToken('StdIRQ');
-//  Token_waitforkey := RegisterKeywordToken('WaitForKey');
+
+  Token_adc        := RegisterKeywordToken('adc');
+//  Token_and        := RegisterKeywordToken('and'); // already used :)
+  Token_asl        := RegisterKeywordToken('asl');
+  Token_bcc        := RegisterKeywordToken('bcc');
+  Token_bcs        := RegisterKeywordToken('bcs');
+  Token_beq        := RegisterKeywordToken('beq');
+  Token_bit        := RegisterKeywordToken('bit');
+  Token_bmi        := RegisterKeywordToken('bmi');
+  Token_bne        := RegisterKeywordToken('bne');
+  Token_bpl        := RegisterKeywordToken('bpl');
+  Token_brk        := RegisterKeywordToken('brk');
+  Token_bvc        := RegisterKeywordToken('bvc');
+  Token_bvs        := RegisterKeywordToken('bvs');
+  Token_clc        := RegisterKeywordToken('clc');
+  Token_cld        := RegisterKeywordToken('cld');
+  Token_cli        := RegisterKeywordToken('cli');
+  Token_clv        := RegisterKeywordToken('clv');
+  Token_cmp        := RegisterKeywordToken('cmp');
+  Token_cpx        := RegisterKeywordToken('cpx');
+  Token_cpy        := RegisterKeywordToken('cpy');
+  Token_dec        := RegisterKeywordToken('dec');
+  Token_dex        := RegisterKeywordToken('dex');
+  Token_dey        := RegisterKeywordToken('dey');
+  Token_eor        := RegisterKeywordToken('eor');
+  Token_inc        := RegisterKeywordToken('inc');
+  Token_inx        := RegisterKeywordToken('inx');
+  Token_iny        := RegisterKeywordToken('iny');
+  Token_jmp        := RegisterKeywordToken('jmp');
+  Token_jsr        := RegisterKeywordToken('jsr');
+  Token_lda        := RegisterKeywordToken('lda');
+  Token_ldx        := RegisterKeywordToken('ldx');
+  Token_ldy        := RegisterKeywordToken('ldy');
+  Token_lsr        := RegisterKeywordToken('lsr');
+  Token_nop        := RegisterKeywordToken('nop');
+  Token_ora        := RegisterKeywordToken('ora');
+  Token_pha        := RegisterKeywordToken('pha');
+  Token_php        := RegisterKeywordToken('php');
+  Token_pla        := RegisterKeywordToken('pla');
+  Token_plp        := RegisterKeywordToken('plp');
+  Token_rol        := RegisterKeywordToken('rol');
+  Token_ror        := RegisterKeywordToken('ror');
+  Token_rti        := RegisterKeywordToken('rti');
+  Token_rts        := RegisterKeywordToken('rts');
+  Token_sbc        := RegisterKeywordToken('sbc');
+  Token_sec        := RegisterKeywordToken('sec');
+  Token_sed        := RegisterKeywordToken('sed');
+  Token_sei        := RegisterKeywordToken('sei');
+  Token_sta        := RegisterKeywordToken('sta');
+  Token_stx        := RegisterKeywordToken('stx');
+  Token_sty        := RegisterKeywordToken('sty');
+  Token_tax        := RegisterKeywordToken('tax');
+  Token_tay        := RegisterKeywordToken('tay');
+  Token_tsx        := RegisterKeywordToken('tsx');
+  Token_txa        := RegisterKeywordToken('txa');
+  Token_txs        := RegisterKeywordToken('txs');
+  Token_tya        := RegisterKeywordToken('tya');
+
+  FAsmTokens := [
+    Token_adc,Token_and,Token_asl,Token_bcc,Token_bcs,Token_beq,Token_bit,Token_bmi,
+    Token_bne,Token_bpl,Token_brk,Token_bvc,Token_bvs,Token_clc,Token_cld,Token_cli,
+    Token_clv,Token_cmp,Token_cpx,Token_cpy,Token_dec,Token_dex,Token_dey,Token_eor,
+    Token_inc,Token_inx,Token_iny,Token_jmp,Token_jsr,Token_lda,Token_ldx,Token_ldy,
+    Token_lsr,Token_nop,Token_ora,Token_pha,Token_php,Token_pla,Token_plp,Token_rol,
+    Token_ror,Token_rti,Token_rts,Token_sbc,Token_sec,Token_sed,Token_sei,Token_sta,
+    Token_stx,Token_sty,Token_tax,Token_tay,Token_tsx,Token_txa,Token_txs,Token_tya
+  ];
 end;
 
 function  TPas2C64_Parser.Simplify_Neg(const a: TExpressionOperandNode; out aResultValue: String; out aResultType: Integer): Boolean;
@@ -1207,6 +1338,11 @@ begin
   Expect(Token_semicolon);
 end;
 
+procedure TPas2C64_Parser.ParseReadLn;
+begin
+  FCodeGen.WriteCode('jsr FILTERED_TEXT');
+end;
+
 procedure TPas2C64_Parser.ParseWaitForKey;
 begin
   FCodeGen.WriteCode('jsr WaitForKey');
@@ -1214,9 +1350,12 @@ end;
 
 procedure TPas2C64_Parser.ParseProcedureCall(const aSym: TSymbol);
 begin
-  if aSym.SymbolClass <> cSymClass_Procedure then Error('Illegal procedure call: Identifier "'+aSym.SymbolName+'" is not a procedure');
+  if not(aSym.SymbolClass in [cSymClass_Procedure,cSymClass_AsmProc]) then Error('Illegal procedure call: Identifier "'+aSym.SymbolName+'" is not a procedure');
 
-  FCodeGen.WriteCode('jsr proc_' + aSym.SymbolName);
+  case aSym.SymbolClass of
+    cSymClass_Procedure : FCodeGen.WriteCode('jsr proc_' + aSym.SymbolName);
+    cSymClass_AsmProc   : FCodeGen.WriteCode('jsr asm_' + aSym.SymbolName);
+  end;
 end;
 
 procedure TPas2C64_Parser.ParseAssignment(const aSym: TSymbol);
@@ -1256,11 +1395,72 @@ begin
   else if Accept(Token_peekw)      then ParsePeekW
   else if Accept(Token_copymemb)   then ParseCopyMemB
   else if Accept(Token_writeln)    then ParseWriteLn
+  else if Accept(Token_readln)     then ParseReadLn
   else if Accept(Token_incmemb)    then ParseIncMemB
   else if Accept(Token_stdirq)     then ParseStdIRQ
   else if Accept(Token_setint)     then ParseSetInterrupt
-//  else if Accept(Token_waitforkey) then ParseWaitForKey
   else if Accept(Token_ident)      then ParseProcedureCallOrAssignment(TokenValue);
+end;
+
+procedure TPas2C64_Parser.ParseAsmStatement;
+var
+  Line: String;
+  t: TToken;
+begin
+  if Token.TokenType <> Token_end then
+    GetToken;
+  Exit;
+  t := Token;
+
+  if  (t.TokenType = Token_ident) then
+  // label
+  begin
+    Line := t.TokenValue + ':';
+
+    Expect(t.TokenType);
+    Expect(Token_colon);
+
+    FCodeGen.WriteOutputCR(Line);
+  end
+  else
+  if (t.TokenType in FAsmTokens) then
+  // assembly instruction
+  begin
+    Line := '    ' + t.TokenValue + ' ';
+
+    if Accept(Token_adc) then
+    begin
+      if Accept(Token_hash) then Line := Line + '#';
+      if Accept(Token_lss)  then Line := Line + '<';
+      if Accept(Token_gtr)  then Line := Line + '>';
+      if Accept(Token_lparen) then
+      begin
+
+        Expect(Token_rparen);
+      end;
+    end;
+    Expect(t.TokenType);
+
+    while not (Token.TokenType in FAsmTokens) and
+          not (Token.TokenType in [Token_ident,Token_end]) do
+    begin
+      Line := Line + Token.TokenValue;
+      GetToken;
+    end;
+
+    FCodeGen.WriteOutputCR(Line);
+  end
+  else
+  if t.TokenType <> Token_end then
+    Error('Asm Statement: Unexpected symbol "'+TokenToStr(t.TokenType)+'"');
+end;
+
+procedure TPas2C64_Parser.ParseAsmBlock;
+begin
+    while not (Token.TokenType in[Token_end,Token_eof]) do
+    begin
+      ParseAsmStatement;
+    end;
 end;
 
 procedure TPas2C64_Parser.ParseBlock;
@@ -1465,7 +1665,10 @@ begin
   else
     FCodeGen.WriteLabel('proc_' + ProcName);
 
-  ParseBlock;
+  if IsAssembler then
+    ParseAsmBlock
+  else
+    ParseBlock;
 
   if IsInterrupt then
     FCodeGen.WriteCode('rti')
@@ -1488,17 +1691,32 @@ begin
   DstStream.Seek(0,soFromBeginning);
   FCodeGen.SetOutputStream(DstStream);
 
-  Expect(Token_program);
+  if Accept(Token_program) then
+  begin
+    ProgName := Token.TokenValue;
 
-  ProgName := Token.TokenValue;
+    Expect(Token_ident);
 
-  Expect(Token_ident);
-  Expect(Token_semicolon);
+    if Accept(Token_lparen) then
+    begin
+      Expect(Token_ident);
+      Expect(Token_comma);
+      Expect(Token_ident);
+      Expect(Token_rparen);
+    end;
+    Expect(Token_semicolon);
+  end;
 
   if FCodeAddr = $0000 then
     FCodeGen.WriteProgramStart
   else
     FCodeGen.WriteProgramStart(FCodeAddr);
+
+  FCodeGen.WriteComment('Standard routines, etc.');
+  FCodeGen.WriteCode('.import source "rtl\Macros_RTL.asm"');
+  FCodeGen.WriteCode('.import source "rtl\Consts_RTL.asm"');
+  FCodeGen.WriteCode('.import source "rtl\Routines_RTL.asm"');
+  FCodeGen.WriteCode('.import source "rtl\TextInput_RTL.asm"');
 
   while Token.TokenType in [Token_const,Token_var,Token_proc] do
   begin
@@ -1586,7 +1804,7 @@ begin
 // interrupt routines and vectors
   RegisterConstant('IRQVECLO'   , '$0314', Token_intnumber);
   RegisterConstant('IRQVECHI'   , '$0315', Token_intnumber);
-  RegisterConstant('STDIRQ'     , '$ea31', Token_intnumber);
+//  RegisterConstant('STDIRQ'     , '$ea31', Token_intnumber);
 
 // keyboard
   RegisterConstant('CURRKEY'    , '$cb', Token_intnumber);
