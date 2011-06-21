@@ -5,7 +5,8 @@ unit form_pas2c64;
 interface
 
 uses
-  Windows, SysUtils, Classes, Forms, Dialogs, SynEdit, SynHighlighterPas, StdCtrls, ExtCtrls, Menus, unit_pas2c64_parser, Controls;
+  Windows, SysUtils, Classes, Forms, Dialogs, SynEdit, SynHighlighterPas,
+  StdCtrls, ExtCtrls, Menus, unit_pas2c64_parser, Controls, ComCtrls;
 
 type
 
@@ -22,17 +23,23 @@ type
     MenuItem_SaveSource: TMenuItem;
     MenuItem_OpenSource: TMenuItem;
     MenuItem_File: TMenuItem;
+    PageControl1: TPageControl;
+    PageControl2: TPageControl;
     Panel1: TPanel;
     Button_Compile: TButton;
     Button_CompileAndRun: TButton;
-    Splitter: TSplitter;
-    GroupBox_AssemblyOutput: TGroupBox;
     CheckBox_UseBasicLoader: TCheckBox;
     Edit_CodeAddr: TEdit;
     Label_CodeAddr: TLabel;
-    SynEdit_SourceCode: TSynEdit;
+    Splitter: TSplitter;
     SynEdit_AssemblyOutput: TSynEdit;
+    SynEdit_Errors: TSynEdit;
+    SynEdit_SourceCode: TSynEdit;
     SynPasSyn: TSynPasSyn;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
+    TabSheet_AssemblyOutput: TTabSheet;
+    TabSheet_Errors: TTabSheet;
     procedure Button1Click(Sender: TObject);
     procedure Button_CompileClick(Sender: TObject);
     procedure Button_CompileAndRunClick(Sender: TObject);
