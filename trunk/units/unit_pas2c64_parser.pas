@@ -1438,6 +1438,7 @@ begin
   end
   else
   if t.TokenType in FAsmTokens then
+  // asm op code
   begin
     Line := t.TokenValue + ' ';
 
@@ -1450,51 +1451,6 @@ begin
     end;
 
     FCodeGen.WriteCode(Line);
-  end;
-
-  Exit;
-  if Token.TokenType <> Token_end then
-    GetToken;
-  Exit;
-  t := Token;
-
-  if  (t.TokenType = Token_ident) then
-  // label
-  begin
-    Line := t.TokenValue + ':';
-
-    Expect(t.TokenType);
-    Expect(Token_colon);
-
-    FCodeGen.WriteOutputCR(Line);
-  end
-  else
-  if (t.TokenType in FAsmTokens) then
-  // assembly instruction
-  begin
-    Line := '    ' + t.TokenValue + ' ';
-
-    if Accept(Token_adc) then
-    begin
-      if Accept(Token_hash) then Line := Line + '#';
-      if Accept(Token_lss)  then Line := Line + '<';
-      if Accept(Token_gtr)  then Line := Line + '>';
-      if Accept(Token_lparen) then
-      begin
-
-        Expect(Token_rparen);
-      end;
-    end;
-    Expect(t.TokenType);
-
-    while not (Token.TokenType in FAsmTokens) and
-          not (Token.TokenType in [Token_ident,Token_end]) do
-    begin
-      Line := Line + Token.TokenValue;
-      GetToken;
-    end;
-
-    FCodeGen.WriteOutputCR(Line);
   end
   else
   if t.TokenType <> Token_end then

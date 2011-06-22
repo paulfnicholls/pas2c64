@@ -102,6 +102,62 @@ type
     procedure WriteExpression;
   end;
 
+  TUInt16    = Word;
+  TSInt16    = Smallint;
+  TString255 = String[255];
+
+  TExpressionType = (
+    etVar_SInt16,
+    etVar_String255,
+    etVar_Single,
+
+    etFunc_SInt16,
+    etFunc_String255,
+    etFunc_Single,
+
+    etConst_UInt16,
+    etConst_SInt16,
+    etConst_String255,
+    etConst_Single
+  );
+
+  TExpressionValue = record
+    ValueStr: TString255;
+
+    case ExpType: TExpressionType of
+      etVar_SInt16,  etVar_String255,  etVar_Single  : (vVarName  : TString255);
+      etFunc_SInt16, etFunc_String255, etFunc_Single : (vFuncName : TString255);
+      etConst_UInt16                                 : (vInteger  : TUInt16);
+      etConst_SInt16                                 : (vInteger  : TSInt16);
+      etConst_String255                              : (vString   : TString255);
+      etConst_Single                                 : (vSingle   : Single);
+  end;
+
+  TExpressionStackItem = class
+
+  end;
+
+  TExpressionStackValue = class(TExpressionStackItem)
+    Value: TExpressionValue;
+  end;
+
+  TExpressionStackOperator = class(TExpressionStackItem)
+    Value: TExpressionOperator;
+  end;
+
+  TExpressionStack = class
+  private
+    FStack: TList;
+  public
+    procedure PushValue(const aValue: TString255);
+    procedure PushOperator(const aOperator: TExpressionOperator);
+
+    function  PeekValue(const aOffset: Integer): TExpressionStackValue;
+
+    function  StackCount: Integer;
+
+  end;
+
 implementation
 
 constructor TExpressionNode.Create(const aParent: TExpressionNodeList);
