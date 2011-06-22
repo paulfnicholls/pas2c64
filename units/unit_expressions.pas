@@ -107,10 +107,12 @@ type
   TString255 = String[255];
 
   TExpressionType = (
+    etVar_UInt16,
     etVar_SInt16,
     etVar_String255,
     etVar_Single,
 
+    etFunc_UInt16,
     etFunc_SInt16,
     etFunc_String255,
     etFunc_Single,
@@ -125,12 +127,16 @@ type
     ValueStr: TString255;
 
     case ExpType: TExpressionType of
-      etVar_SInt16,  etVar_String255,  etVar_Single  : (vVarName  : TString255);
-      etFunc_SInt16, etFunc_String255, etFunc_Single : (vFuncName : TString255);
-      etConst_UInt16                                 : (vInteger  : TUInt16);
-      etConst_SInt16                                 : (vInteger  : TSInt16);
-      etConst_String255                              : (vString   : TString255);
-      etConst_Single                                 : (vSingle   : Single);
+      etVar_UInt16,etVar_SInt16,
+      etVar_String255,  etVar_Single   : (vVarName  : TString255);
+
+      etFunc_UInt16,etFunc_SInt16,
+      etFunc_String255, etFunc_Single  : (vFuncName : TString255);
+
+      etConst_UInt16                   : (vWord     : TUInt16);
+      etConst_SInt16                   : (vInteger  : TSInt16);
+      etConst_String255                : (vString   : TString255);
+      etConst_Single                   : (vSingle   : Single);
   end;
 
   TExpressionStackItem = class
@@ -149,13 +155,17 @@ type
   private
     FStack: TList;
   public
+    constructor Create;
+    destructor  Destroy; override;
+
     procedure PushValue(const aValue: TString255);
     procedure PushOperator(const aOperator: TExpressionOperator);
 
-    function  PeekValue(const aOffset: Integer): TExpressionStackValue;
+    function  PeekItemAt(const aIndex: Integer): TExpressionStackItem;
+    function  PopItemAt(const aIndex: Integer): TExpressionStackItem;
+    function  PopItem: TExpressionStackItem;
 
     function  StackCount: Integer;
-
   end;
 
 implementation
@@ -348,6 +358,46 @@ begin
     else
       WriteLn(TExpressionOperandNode(Node).OperandValue);
   end;
+end;
+
+constructor TExpressionStack.Create;
+begin
+
+end;
+
+destructor  TExpressionStack.Destroy;
+begin
+
+end;
+
+procedure TExpressionStack.PushValue(const aValue: TString255);
+begin
+
+end;
+
+procedure TExpressionStack.PushOperator(const aOperator: TExpressionOperator);
+begin
+
+end;
+
+function  TExpressionStack.PeekItemAt(const aIndex: Integer): TExpressionStackItem;
+begin
+
+end;
+
+function  TExpressionStack.PopItemAt(const aIndex: Integer): TExpressionStackItem;
+begin
+
+end;
+
+function  TExpressionStack.PopItem: TExpressionStackItem;
+begin
+
+end;
+
+function  TExpressionStack.StackCount: Integer;
+begin
+
 end;
 
 end.
