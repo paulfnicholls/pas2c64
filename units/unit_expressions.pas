@@ -111,16 +111,19 @@ type
     etVar_SInt16,
     etVar_String255,
     etVar_Single,
+    etVar_Boolean,
 
     etFunc_UInt16,
     etFunc_SInt16,
     etFunc_String255,
     etFunc_Single,
+    etFunc_Boolean,
 
     etConst_UInt16,
     etConst_SInt16,
     etConst_String255,
-    etConst_Single
+    etConst_Single,
+    etConst_Boolean
   );
 
   TExpressionValue = record
@@ -128,15 +131,18 @@ type
 
     case ExpType: TExpressionType of
       etVar_UInt16,etVar_SInt16,
-      etVar_String255,  etVar_Single   : (vVarName  : TString255);
+      etVar_String255,  etVar_Single,
+      etVar_Boolean                    : (vVarName  : TString255);
 
       etFunc_UInt16,etFunc_SInt16,
-      etFunc_String255, etFunc_Single  : (vFuncName : TString255);
+      etFunc_String255, etFunc_Single,
+      etFunc_Boolean                   : (vFuncName : TString255);
 
       etConst_UInt16                   : (vWord     : TUInt16);
       etConst_SInt16                   : (vInteger  : TSInt16);
       etConst_String255                : (vString   : TString255);
       etConst_Single                   : (vSingle   : Single);
+      etConst_Boolean                  : (vBoolean  : Boolean);
   end;
 
   TExpressionStackItem = class

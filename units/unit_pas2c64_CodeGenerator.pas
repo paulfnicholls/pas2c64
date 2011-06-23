@@ -6,7 +6,8 @@ interface
 
 uses
   SysUtils,
-  Classes;
+  Classes,
+  unit_Expressions;
 
 const
   cTAB           = AnsiChar(#9);
@@ -17,9 +18,28 @@ const
   cIndentChar    = AnsiChar(' ');
 
 type
+  MathException = class(Exception);
+
+  TMathRegister = (
+    mregI,
+    mregW,
+    mregF,
+    mregS
+  );
+
+const
+  cRegisterCount = 8;
+  cRegister: array[TMathRegister] of String = (
+    'I',
+    'W',
+    'F',
+    'S'
+  );
+
+type
   C64OpException = Class(Exception);
 
-  TRegister = (
+  Tc64Register = (
     regA,
     regX,
     regY
@@ -101,7 +121,7 @@ type
   );
 
 const
-  cRegisterName : array[TRegister] of AnsiString = (
+  cRegisterName : array[Tc64Register] of AnsiString = (
     'a',
     'x',
     'y'
@@ -189,8 +209,9 @@ zpg,Y	 ..	zeropage, Y-indexed	OPC $LL,Y	 	operand is address incremented by Y; a
 type
   TCodeGenerator_C64 = class
   private
-    FOutputStream: TStream;
-    FLabelIndex: Integer;
+    FOutputStream : TStream;
+    FLabelIndex   : Integer;
+    FRegId        : array[TMathRegister] of Integer;
   public
     constructor Create;
     destructor  Destroy; override;
@@ -201,6 +222,8 @@ type
     // code generation
     procedure ResetLabels;
     function  NewLabel: AnsiString;
+    function  PushReg(aReg : TMathRegister) : String;
+    function  PopReg(aReg : TMathRegister) : String;
 
     procedure WriteOutput(const aStr: AnsiString);
     procedure WriteOutputCR(aStr: AnsiString = '');
@@ -216,12 +239,12 @@ type
 
     procedure WriteMainStart;
 
-    procedure LoadReg_IM(const aReg: TRegister; const aConstValue: Byte);
-    procedure LoadRegW_IM(const aLoReg,aHiReg: TRegister; const aConstValue: Word);
-    procedure LoadReg_Mem(const aReg: TRegister; const aAddr: Word);
-    procedure StoreReg(const aReg: TRegister; const aAddr: Word);
+    procedure LoadReg_IM(const aReg: Tc64Register; const aConstValue: Byte);
+    procedure LoadRegW_IM(const aLoReg,aHiReg: Tc64Register; const aConstValue: Word);
+    procedure LoadReg_Mem(const aReg: Tc64Register; const aAddr: Word);
+    procedure StoreReg(const aReg: Tc64Register; const aAddr: Word);
     procedure OpCode(const aOpCode: TOpCode);
-    procedure SwapRegisters(const aSrcReg,aDstReg: TRegister);
+    procedure SwapRegisters(const aSrcReg,aDstReg: Tc64Register);
 
     procedure OpA(const aOpCode: TOpCode);                         // OPC A
     procedure OpAbs(const aOpCode: TOpCode; const aAddr: Word);    // OPC $HHLL
@@ -511,14 +534,40 @@ begin
 end;
 
 procedure TCodeGenerator_C64.ResetLabels;
+var
+  r: TMathRegister;
 begin
   FLabelIndex := 0;
+
+  // clear register ids
+  for r := Low(TMathRegister) to High(TMathRegister) do
+    FRegId[r] := -1;
 end;
 
 function  TCodeGenerator_C64.NewLabel: AnsiString;
 begin
   Result := Format('L%d',[FLabelIndex]);
   Inc(FLabelIndex);
+end;
+
+function  TCodeGenerator_C64.PushReg(aReg : TMathRegister) : String;
+begin
+  Inc(FRegID[aReg]);
+  if FRegID[aReg] = cRegisterCount then
+    raise MathException.Create(cRegister[aReg]+' Registers overflow!')
+  else
+    Result := cRegister[aReg] + IntToStr(FRegID[aReg]);
+end;
+{..............................................................................}
+
+{..............................................................................}
+function  TCodeGenerator_C64.PopReg(aReg : TMathRegister) : String;
+begin
+  if FRegID[aReg] = cRegisterCount then
+    raise MathException.Create(cRegister[aReg]+' Registers underflow!')
+  else
+    Result := cRegister[aReg] + IntToStr(FRegID[aReg]);
+  Dec(FRegID[aReg]);
 end;
 
 procedure TCodeGenerator_C64.SetOutputStream(const aStream: TStream);
@@ -590,7 +639,7 @@ begin
   WriteLabel('main');
 end;
 
-procedure TCodeGenerator_C64.LoadReg_IM(const aReg: TRegister; const aConstValue: Byte);
+procedure TCodeGenerator_C64.LoadReg_IM(const aReg: Tc64Register; const aConstValue: Byte);
 begin
   if not(aReg in cLoadRegIM) then
     raise C64OpException.Create('LoadReg_IM: Invalid register "'+cRegisterName[aReg]+'"');
@@ -598,7 +647,7 @@ begin
   WriteCode(LowerCase(Format('ld%s #$%.2x',[cRegisterName[aReg],aConstValue])));
 end;
 
-procedure TCodeGenerator_C64.LoadRegW_IM(const aLoReg,aHiReg: TRegister; const aConstValue: Word);
+procedure TCodeGenerator_C64.LoadRegW_IM(const aLoReg,aHiReg: Tc64Register; const aConstValue: Word);
 begin
   if not (aLoReg in cLoadRegIM) or not (aHiReg in cLoadRegIM) then
     raise C64OpException.Create('LoadRegW_IM: Invalid register(s) '+Format('"%s, %s"',[cRegisterName[aLoReg]+cRegisterName[aHiReg]]));
@@ -607,7 +656,7 @@ begin
   WriteCode(LowerCase(Format('ld%s >#$%.4x',[cRegisterName[aHiReg],aConstValue])));
 end;
 
-procedure TCodeGenerator_C64.LoadReg_Mem(const aReg: TRegister; const aAddr: Word);
+procedure TCodeGenerator_C64.LoadReg_Mem(const aReg: Tc64Register; const aAddr: Word);
 begin
   if not(aReg in cLoadReg) then
     raise C64OpException.Create('LoadReg_Mem: Invalid register "'+cRegisterName[aReg]+'"');
@@ -615,7 +664,7 @@ begin
   WriteCode(LowerCase(Format('ld%s $%.4x',[cRegisterName[aReg],aAddr])));
 end;
 
-procedure TCodeGenerator_C64.StoreReg(const aReg: TRegister; const aAddr: Word);
+procedure TCodeGenerator_C64.StoreReg(const aReg: Tc64Register; const aAddr: Word);
 begin
   if not(aReg in cStoreReg) then
     raise C64OpException.Create('StoreReg: Invalid register "'+cRegisterName[aReg]+'"');
@@ -631,7 +680,7 @@ begin
   WriteCode(cOpCodeName[aOpCode]);
 end;
 
-procedure TCodeGenerator_C64.SwapRegisters(const aSrcReg,aDstReg: TRegister);
+procedure TCodeGenerator_C64.SwapRegisters(const aSrcReg,aDstReg: Tc64Register);
 var
   IllegalRegs: Boolean;
 begin

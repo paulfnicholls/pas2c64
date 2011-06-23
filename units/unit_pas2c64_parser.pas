@@ -30,7 +30,7 @@ var
 
 // asm tokens
   Token_adc        : Integer;
-//  Token_and        : Integer;
+//  Token_and        : Integer;  // already taken but can use again
   Token_asl        : Integer;
   Token_bcc        : Integer;
   Token_bcs        : Integer;
@@ -86,13 +86,13 @@ var
   Token_txs        : Integer;
   Token_tya        : Integer;
 
-
 type
   TExpressionMode = (
     emAllIdents,
     emConstIdentsOnly
   );
 
+type
   TPas2C64_Parser = class(TBaseParser)
   private
     FCodeAddr       : Word;
