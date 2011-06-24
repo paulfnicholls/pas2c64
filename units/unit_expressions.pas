@@ -5,7 +5,8 @@ unit unit_Expressions;
 interface
 
 uses
-  Classes, SysUtils; 
+  Classes,
+  unit_pas2c64_types;
 
 type
   TExpressionOperator = (

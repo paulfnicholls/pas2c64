@@ -1498,7 +1498,6 @@ begin
     Expect(Token_eql);
 
     e := ParseExpression(True,emConstIdentsOnly);
-    e.WriteExpression;
 
     Value := TExpressionOperandNode(e.GetNode(0));
 

@@ -1,2 +1,2 @@
 call KickAss.bat pas2c64_output.asm
-"C:\Shared\WinVICE-2.2-x86\x64.exe" pas2c64_output.prg
+"C:\Shared\WinVICE\x64.exe" pas2c64_output.prg
