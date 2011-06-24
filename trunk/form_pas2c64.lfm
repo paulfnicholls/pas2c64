@@ -1,7 +1,7 @@
 object FormMainForm: TFormMainForm
-  Left = 404
+  Left = 207
   Height = 667
-  Top = 27
+  Top = 259
   Width = 862
   Caption = 'Pas2C64 Compiler'
   ClientHeight = 647
@@ -60,9 +60,9 @@ object FormMainForm: TFormMainForm
     end
     object CheckBox_UseBasicLoader: TCheckBox
       Left = 282
-      Height = 19
+      Height = 17
       Top = 4
-      Width = 121
+      Width = 119
       Caption = 'Use BASIC loader'
       Checked = True
       Font.Color = clWindowText
