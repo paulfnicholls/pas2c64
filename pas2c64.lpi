@@ -61,10 +61,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="form_pas2c64"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="247"/>
-        <CursorPos X="39" Y="254"/>
+        <TopLine Value="31"/>
+        <CursorPos X="1" Y="76"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -86,11 +87,10 @@
         <Filename Value="units\unit_pas2c64_parser.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="unit_pas2c64_parser"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="1496"/>
-        <CursorPos X="1" Y="1521"/>
+        <TopLine Value="1478"/>
+        <CursorPos X="74" Y="1521"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -157,7 +157,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="147"/>
         <CursorPos X="22" Y="151"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="6"/>
       </Unit9>
       <Unit10>
         <Filename Value="..\Downloads\j6502b.pas"/>
@@ -165,7 +165,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="54"/>
         <CursorPos X="67" Y="72"/>
-        <UsageCount Value="48"/>
+        <UsageCount Value="44"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit10>
       <Unit11>
@@ -173,14 +173,14 @@
         <WindowIndex Value="0"/>
         <TopLine Value="129"/>
         <CursorPos X="10" Y="77"/>
-        <UsageCount Value="45"/>
+        <UsageCount Value="41"/>
       </Unit11>
       <Unit12>
         <Filename Value="C:\Lazarus\fpc\2.4.2\source\rtl\inc\systemh.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="973"/>
         <CursorPos X="11" Y="990"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="4"/>
       </Unit12>
       <Unit13>
         <Filename Value="units\unit_pas2c64_types.pas"/>
@@ -190,7 +190,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="124"/>
         <CursorPos X="1" Y="147"/>
-        <UsageCount Value="30"/>
+        <UsageCount Value="74"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit13>
@@ -202,7 +202,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="141"/>
         <CursorPos X="54" Y="170"/>
-        <UsageCount Value="30"/>
+        <UsageCount Value="74"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit14>
