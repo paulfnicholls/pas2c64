@@ -71,9 +71,9 @@ implementation
 {$R *.lfm}
 
 uses
-  ShellAPI,registry, shlobj;
+  ShellAPI,registry, shlobj,Process;
 
-procedure RegisterFileType(ExtName:String; AppName:String) ;
+procedure RegisterFileType(ExtName:String; AppName:String);
 var
    reg:TRegistry;
 begin

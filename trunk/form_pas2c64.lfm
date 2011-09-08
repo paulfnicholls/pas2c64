@@ -1,7 +1,7 @@
 object FormMainForm: TFormMainForm
-  Left = 207
+  Left = 555
   Height = 667
-  Top = 259
+  Top = 286
   Width = 862
   Caption = 'Pas2C64 Compiler'
   ClientHeight = 647
