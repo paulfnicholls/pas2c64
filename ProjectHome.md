@@ -1,0 +1,1 @@
+pas2c64 is a Pascal compiler which will generate programs suitable to be run in a C64 emulator.  The default format of the generated output is a .prg file which is compatible with most C64 emulators.
